@@ -1,0 +1,121 @@
+NODES_EDGES(nodes, edges)::=<<
+const int NODES = <nodes>;
+const int EDGES = <edges>;
+>>
+
+DIALGOCODE()::=<<
+
+//-------------------Dialgo Code---------------------
+
+int getReceiveIndex(int pidA, int pidB){
+    int in = 0;
+    if (pidA > pidB) {
+		in = pidA - 1;
+	} else {
+		in = pidA;
+	}
+	return ((NODES - 1) * pidB) + in;
+}
+
+int getSendIndex(int pidA, int pidB){
+    int in = 0;
+    if (pidB > pidA) {
+		in = pidB - 1;
+	} else {
+		in = pidB;
+	}
+	return ((NODES - 1) * pidA) + in;
+}
+
+int setNewChanIndex(int index, int bufferSize){
+    if(index == bufferSize - 1){
+        return 0;
+    }else{
+        return index + 1;
+    }
+}
+>>
+
+SYSTEM_DECL_TEMPLATE(name, i, parameter)::=<<
+<name><i> = <name>(<parameter>);
+>>
+
+SEND_SYNC_UPDATE(chan, pidB, msg)::=<<
+<chan>Var[getSendIndex(pid,<pidB>)] = <msg>
+>>
+
+SEND_SYNC_SYNC(chan, pidB)::=<<
+<chan>Chan[getSendIndex(pid,<pidB>)]!
+>>
+
+RECEIVE_SYNC_UPDATE(var, chan, pidB)::=<<
+<var> = <chan>Var[getReceiveIndex(pid,<pidB>)]
+>>
+
+RECEIVE_SYNC_SYNC(chan, pidB)::=<<
+<chan>Chan[getReceiveIndex(pid,<pidB>)]?
+>>
+
+SEND_ASYNC_UPDATE(chan, pidB, msg)::=<<
+<chan>Var[getSendIndex(pid,<pidB>)] = <msg>,
+<chan>Size[getSendIndex(pid, <pidB>)]++
+>>
+
+SEND_ASYNC_GUARD(chan, pidB)::=<<
+<chan>Size[getSendIndex(pid, <pidB>)] \< <chan>Buffer
+>>
+
+RECEIVE_ASYNC_UPDATE(chan, pidB, var)::=<<
+<var> = <chan>Var[getReceiveIndex(pid,<pidB>)],
+<chan>Size[getReceiveIndex(pid, <pidB>)]--
+>>
+
+RECEIVE_ASYNC_GUARD(chan, pidB)::=<<
+<chan>Size[getReceiveIndex(pid, <pidB>)] != 0
+>>
+
+SEND_ASYNC_BUFFER_UPDATE(chan, pidB, msg)::=<<
+<chan>Var[getSendIndex(pid,<pidB>)][<chan>WriteIndex[getSendIndex(pid,<pidB>)]] = <msg>,
+<chan>Size[getSendIndex(pid, <pidB>)]++,
+<chan>WriteIndex[getSendIndex(pid, <pidB>)] = setNewChanIndex(<chan>WriteIndex[getSendIndex(pid, <pidB>)],<chan>Buffer)
+>>
+
+SEND_ASYNC_BUFFER_GUARD(chan, pidB)::=<<
+<chan>Size[getSendIndex(pid, <pidB>)] \< <chan>Buffer
+>>
+
+SEND_NON_FIFO_UPDATE(chan, pidB, msg)::=<<
+<chan>WriteIndex[getSendIndex(pid, <pidB>)] = setNewChanIndexNonFifo(<chan>State, pid, <pidB>),
+<chan>Var[getSendIndex(pid,<pidB>)][<chan>WriteIndex[getSendIndex(pid,<pidB>)]] = <msg>,
+<chan>State[getSendIndex(pid, <pidB>)][<chan>WriteIndex[getSendIndex(pid, <pidB>)]] = true,
+<chan>Size[getSendIndex(pid, <pidB>)]++
+>>
+
+RECEIVE_ASYNC_BUFFER_UPDATE(chan, pidB, var)::=<<
+<var> = <chan>Var[getReceiveIndex(pid,<pidB>)][<chan>ReadIndex[getReceiveIndex(pid,<pidB>)]],
+<chan>Size[getReceiveIndex(pid, <pidB>)]--,
+<chan>ReadIndex[getReceiveIndex(pid, <pidB>)] = setNewChanIndex(<chan>ReadIndex[getReceiveIndex(pid, <pidB>)],<chan>Buffer)
+>>
+
+RECEIVE_ASYNC_BUFFER_GUARD(chan, pidB)::=<<
+<chan>Size[getReceiveIndex(pid, <pidB>)] != 0
+>>
+
+CHAN_SYNC(chan, type)::=<<
+<type> <chan>Var[EDGES];
+chan <chan>Chan[EDGES];
+>>
+
+CHAN_ASYNC(chan, type)::=<<
+const int <chan>Buffer = 1;
+<type> <chan>Var[EDGES];
+int <chan>Size[EDGES];
+>>
+
+CHAN_ASYNC_WITH_BUFFER(chan, type, size)::=<<
+const int <chan>Buffer = <size>;
+<type> <chan>Var[EDGES][<chan>Buffer];
+int <chan>Size[EDGES];
+int <chan>ReadIndex[EDGES];
+int <chan>WriteIndex[EDGES];
+>>

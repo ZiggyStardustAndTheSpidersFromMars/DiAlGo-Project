@@ -1,0 +1,916 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<nta>
+	<declaration>const int NODES = 4;
+const int EDGES = 12;
+const int bool_chanRequestBuffer = 1;
+bool bool_chanRequestVar[EDGES];
+int bool_chanRequestSize[EDGES];
+int int_chanReplyVar[EDGES];
+chan int_chanReplyChan[EDGES];
+//-------------------Dialgo Code---------------------
+
+int getReceiveIndex(int pidA, int pidB){
+    int in = 0;
+    if (pidA &gt; pidB) {
+		in = pidA - 1;
+	} else {
+		in = pidA;
+	}
+	return ((NODES - 1) * pidB) + in;
+}
+
+int getSendIndex(int pidA, int pidB){
+    int in = 0;
+    if (pidB &gt; pidA) {
+		in = pidB - 1;
+	} else {
+		in = pidB;
+	}
+	return ((NODES - 1) * pidA) + in;
+}
+
+int setNewChanIndex(int index, int bufferSize){
+    if(index == bufferSize - 1){
+        return 0;
+    }else{
+        return index + 1;
+    }
+}</declaration>
+	<template>
+		<name x="5" y="5">node</name>
+		<parameter>const int pid</parameter>
+		<declaration>int broadcastCounter = 0;
+bool sendLossy = false;
+
+bool hasToken = false;
+bool wasInCs = false;
+int queue = 0;
+int tempQueue = 0;
+int queueSize = 0;
+bool pidIsInQueue = false;
+
+int i=0;
+int replyMsg;
+bool requestMsg;	</declaration>
+			<location id="id0" x="0" y="0" color="#0000ff">
+	<name x="10" y="0">Start</name>
+	</location>	<location id="id1" x="-150" y="-50" color="#0000ff">
+	<name x="-140" y="-50">If1</name>
+	</location>	<location id="id2" x="-150" y="-105" color="#0000ff">
+	<name x="-140" y="-105">Assignment1</name>
+	</location>	<location id="id3" x="150" y="-50" color="#0000ff">
+	<name x="160" y="-50">Else1</name>
+	</location>	<location id="id4" x="0" y="-155" color="#0000ff">
+	</location>	<location id="id5" x="0" y="-210" color="#0000ff">
+	<name x="10" y="-210">Assignment2</name>
+	</location>	<location id="id6" x="0" y="-260" color="#0000ff">
+	<name x="10" y="-260">For1</name>
+	</location>	<location id="id7" x="0" y="-310" color="#0000ff">
+	<name x="10" y="-310">Condition1</name>
+	</location>	<location id="id8" x="-150" y="-360" color="#0000ff">
+	<name x="-140" y="-360">If2</name>
+	</location>	<location id="id9" x="-300" y="-410" color="#0000ff">
+	<name x="-290" y="-410">If3</name>
+	</location>	<location id="id10" x="-300" y="-465" color="#0000ff">
+	<name x="-290" y="-465">Assignment3</name>
+	</location>	<location id="id11" x="-300" y="-515" color="#0000ff">
+	<name x="-290" y="-515">For2</name>
+	</location>	<location id="id12" x="-300" y="-565" color="#0000ff">
+	<name x="-290" y="-565">Condition2</name>
+	</location>	<location id="id13" x="-450" y="-615" color="#0000ff">
+	<name x="-440" y="-615">If4</name>
+	</location>	<location id="id14" x="-150" y="-615" color="#0000ff">
+	<name x="-140" y="-615">Else2</name>
+	</location>	<location id="id15" x="-450" y="-735" color="#0000ff">
+	<name x="-440" y="-735">Send1</name>
+	</location>	<location id="id16" x="-300" y="-785" color="#0000ff">
+	</location>	<location id="id17" x="-300" y="-840" color="#0000ff">
+	<name x="-290" y="-840">Assignment4</name>
+	</location>	<location id="id18" x="-550" y="-515" color="#0000ff">
+	<name x="-540" y="-515">id18</name>
+	</location>	<location id="id19" x="-550" y="-565" color="#0000ff">
+	<name x="-540" y="-565">For3</name>
+	</location>	<location id="id20" x="-550" y="-615" color="#0000ff">
+	<name x="-540" y="-615">Condition3</name>
+	</location>	<location id="id21" x="-550" y="-670" color="#0000ff">
+	<name x="-540" y="-670">Assignment5</name>
+	</location>	<location id="id22" x="-550" y="-720" color="#0000ff">
+	<name x="-540" y="-720">For4</name>
+	</location>	<location id="id23" x="-550" y="-770" color="#0000ff">
+	<name x="-540" y="-770">Condition4</name>
+	</location>	<location id="id24" x="-700" y="-820" color="#0000ff">
+	<name x="-690" y="-820">If5</name>
+	</location>	<location id="id25" x="-900" y="-910" color="#0000ff">
+	<name x="-890" y="-910">Receive1</name>
+	</location>	<location id="id26" x="-900" y="-960" color="#0000ff">
+	<name x="-890" y="-960">Marker1</name>
+	</location>	<location id="id27" x="-900" y="-1015" color="#0000ff">
+	<name x="-890" y="-1015">Assignment6</name>
+	</location>	<location id="id28" x="-900" y="-1070" color="#0000ff">
+	<name x="-890" y="-1070">Assignment7</name>
+	</location>	<location id="id29" x="-700" y="-920" color="#0000ff">
+	<name x="-690" y="-920">Default1</name>
+	</location>	<location id="id30" x="-700" y="-1120" color="#0000ff">
+	</location>	<location id="id31" x="-400" y="-820" color="#0000ff">
+	<name x="-390" y="-820">Else3</name>
+	</location>	<location id="id32" x="-550" y="-1170" color="#0000ff">
+	</location>	<location id="id33" x="-550" y="-1225" color="#0000ff">
+	<name x="-540" y="-1225">Assignment8</name>
+	</location>	<location id="id34" x="-800" y="-720" color="#0000ff">
+	<name x="-790" y="-720">id34</name>
+	</location>	<location id="id35" x="-800" y="-565" color="#0000ff">
+	<name x="-790" y="-565">id35</name>
+	</location>	<location id="id36" x="0" y="-410" color="#0000ff">
+	<name x="10" y="-410">Else4</name>
+	</location>	<location id="id37" x="-150" y="-1275" color="#0000ff">
+	</location>	<location id="id38" x="-150" y="-1330" color="#0000ff">
+	<name x="-140" y="-1330">Assignment9</name>
+	</location>	<location id="id39" x="-150" y="-1380" color="#0000ff">
+	<name x="-140" y="-1380">For5</name>
+	</location>	<location id="id40" x="-150" y="-1430" color="#0000ff">
+	<name x="-140" y="-1430">Condition5</name>
+	</location>	<location id="id41" x="-300" y="-1480" color="#0000ff">
+	<name x="-290" y="-1480">If6</name>
+	</location>	<location id="id42" x="-500" y="-1600" color="#0000ff">
+	<name x="-490" y="-1600">Receive2</name>
+	</location>	<location id="id43" x="-500" y="-1650" color="#0000ff">
+	<name x="-490" y="-1650">Marker2</name>
+	</location>	<location id="id44" x="-500" y="-1705" color="#0000ff">
+	<name x="-490" y="-1705">Assignment10</name>
+	</location>	<location id="id45" x="-500" y="-1760" color="#0000ff">
+	<name x="-490" y="-1760">Assignment11</name>
+	</location>	<location id="id46" x="-500" y="-1815" color="#0000ff">
+	<name x="-490" y="-1815">Assignment12</name>
+	</location>	<location id="id47" x="-500" y="-1865" color="#0000ff">
+	<name x="-490" y="-1865">For6</name>
+	</location>	<location id="id48" x="-500" y="-1915" color="#0000ff">
+	<name x="-490" y="-1915">Condition6</name>
+	</location>	<location id="id49" x="-500" y="-1970" color="#0000ff">
+	<name x="-490" y="-1970">Assignment13</name>
+	</location>	<location id="id50" x="-650" y="-2020" color="#0000ff">
+	<name x="-640" y="-2020">If7</name>
+	</location>	<location id="id51" x="-650" y="-2075" color="#0000ff">
+	<name x="-640" y="-2075">Assignment14</name>
+	</location>	<location id="id52" x="-350" y="-2020" color="#0000ff">
+	<name x="-340" y="-2020">Else5</name>
+	</location>	<location id="id53" x="-500" y="-2125" color="#0000ff">
+	</location>	<location id="id54" x="-500" y="-2180" color="#0000ff">
+	<name x="-490" y="-2180">Assignment15</name>
+	</location>	<location id="id55" x="-750" y="-1865" color="#0000ff">
+	<name x="-740" y="-1865">id55</name>
+	</location>	<location id="id56" x="-900" y="-1915" color="#0000ff">
+	<name x="-890" y="-1915">If8</name>
+	</location>	<location id="id57" x="-1050" y="-1965" color="#0000ff">
+	<name x="-1040" y="-1965">If9</name>
+	</location>	<location id="id58" x="-1050" y="-2020" color="#0000ff">
+	<name x="-1040" y="-2020">Assignment16</name>
+	</location>	<location id="id59" x="-750" y="-1965" color="#0000ff">
+	<name x="-740" y="-1965">Else6</name>
+	</location>	<location id="id60" x="-600" y="-2015" color="#0000ff">
+	<name x="-590" y="-2015">Else7</name>
+	</location>	<location id="id61" x="-900" y="-2015" color="#0000ff">
+	<name x="-890" y="-2015">If10</name>
+	</location>	<location id="id62" x="-900" y="-2070" color="#0000ff">
+	<name x="-890" y="-2070">Assignment17</name>
+	</location>	<location id="id63" x="-450" y="-2065" color="#0000ff">
+	<name x="-440" y="-2065">Else8</name>
+	</location>	<location id="id64" x="-750" y="-2065" color="#0000ff">
+	<name x="-740" y="-2065">If11</name>
+	</location>	<location id="id65" x="-750" y="-2120" color="#0000ff">
+	<name x="-740" y="-2120">Assignment18</name>
+	</location>	<location id="id66" x="-450" y="-2120" color="#0000ff">
+	<name x="-440" y="-2120">Assignment19</name>
+	</location>	<location id="id67" x="-900" y="-2230" color="#0000ff">
+	</location>	<location id="id68" x="-600" y="-1915" color="#0000ff">
+	<name x="-590" y="-1915">Else9</name>
+	</location>	<location id="id69" x="-750" y="-2280" color="#0000ff">
+	</location>	<location id="id70" x="-300" y="-1580" color="#0000ff">
+	<name x="-290" y="-1580">Default2</name>
+	</location>	<location id="id71" x="-300" y="-2330" color="#0000ff">
+	</location>	<location id="id72" x="0" y="-1480" color="#0000ff">
+	<name x="10" y="-1480">Else10</name>
+	</location>	<location id="id73" x="-150" y="-2380" color="#0000ff">
+	</location>	<location id="id74" x="-150" y="-2435" color="#0000ff">
+	<name x="-140" y="-2435">Assignment20</name>
+	</location>	<location id="id75" x="-400" y="-1380" color="#0000ff">
+	<name x="-390" y="-1380">id75</name>
+	</location>	<location id="id76" x="150" y="-360" color="#0000ff">
+	<name x="160" y="-360">Else11</name>
+	</location>	<location id="id77" x="150" y="-410" color="#0000ff">
+	<name x="160" y="-410">Marker3</name>
+	</location>	<location id="id78" x="150" y="-460" color="#0000ff">
+	<name x="160" y="-460">Marker4</name>
+	</location>	<location id="id79" x="150" y="-510" color="#0000ff">
+	<name x="160" y="-510">For7</name>
+	</location>	<location id="id80" x="150" y="-560" color="#0000ff">
+	<name x="160" y="-560">Condition7</name>
+	</location>	<location id="id81" x="150" y="-615" color="#0000ff">
+	<name x="160" y="-615">Assignment21</name>
+	</location>	<location id="id82" x="150" y="-665" color="#0000ff">
+	<name x="160" y="-665">For8</name>
+	</location>	<location id="id83" x="150" y="-715" color="#0000ff">
+	<name x="160" y="-715">Condition8</name>
+	</location>	<location id="id84" x="0" y="-765" color="#0000ff">
+	<name x="10" y="-765">If12</name>
+	</location>	<location id="id85" x="-200" y="-885" color="#0000ff">
+	<name x="-190" y="-885">Receive3</name>
+	</location>	<location id="id86" x="-200" y="-935" color="#0000ff">
+	<name x="-190" y="-935">Marker5</name>
+	</location>	<location id="id87" x="-200" y="-990" color="#0000ff">
+	<name x="-190" y="-990">Assignment22</name>
+	</location>	<location id="id88" x="-200" y="-1045" color="#0000ff">
+	<name x="-190" y="-1045">Assignment23</name>
+	</location>	<location id="id89" x="-200" y="-1100" color="#0000ff">
+	<name x="-190" y="-1100">Assignment24</name>
+	</location>	<location id="id90" x="-200" y="-1150" color="#0000ff">
+	<name x="-190" y="-1150">For9</name>
+	</location>	<location id="id91" x="-200" y="-1200" color="#0000ff">
+	<name x="-190" y="-1200">Condition9</name>
+	</location>	<location id="id92" x="-200" y="-1255" color="#0000ff">
+	<name x="-190" y="-1255">Assignment25</name>
+	</location>	<location id="id93" x="-350" y="-1305" color="#0000ff">
+	<name x="-340" y="-1305">If13</name>
+	</location>	<location id="id94" x="-350" y="-1360" color="#0000ff">
+	<name x="-340" y="-1360">Assignment26</name>
+	</location>	<location id="id95" x="-50" y="-1305" color="#0000ff">
+	<name x="-40" y="-1305">Else12</name>
+	</location>	<location id="id96" x="-200" y="-2485" color="#0000ff">
+	</location>	<location id="id97" x="-200" y="-2540" color="#0000ff">
+	<name x="-190" y="-2540">Assignment27</name>
+	</location>	<location id="id98" x="-450" y="-1150" color="#0000ff">
+	<name x="-440" y="-1150">id98</name>
+	</location>	<location id="id99" x="-600" y="-1200" color="#0000ff">
+	<name x="-590" y="-1200">If14</name>
+	</location>	<location id="id100" x="-750" y="-1250" color="#0000ff">
+	<name x="-740" y="-1250">If15</name>
+	</location>	<location id="id101" x="-750" y="-1305" color="#0000ff">
+	<name x="-740" y="-1305">Assignment28</name>
+	</location>	<location id="id102" x="-450" y="-1250" color="#0000ff">
+	<name x="-440" y="-1250">Else13</name>
+	</location>	<location id="id103" x="-300" y="-1300" color="#0000ff">
+	<name x="-290" y="-1300">Else14</name>
+	</location>	<location id="id104" x="-600" y="-1300" color="#0000ff">
+	<name x="-590" y="-1300">If16</name>
+	</location>	<location id="id105" x="-600" y="-1355" color="#0000ff">
+	<name x="-590" y="-1355">Assignment29</name>
+	</location>	<location id="id106" x="-150" y="-1350" color="#0000ff">
+	<name x="-140" y="-1350">Else15</name>
+	</location>	<location id="id107" x="-450" y="-1350" color="#0000ff">
+	<name x="-440" y="-1350">If17</name>
+	</location>	<location id="id108" x="-450" y="-1405" color="#0000ff">
+	<name x="-440" y="-1405">Assignment30</name>
+	</location>	<location id="id109" x="-150" y="-1405" color="#0000ff">
+	<name x="-140" y="-1405">Assignment31</name>
+	</location>	<location id="id110" x="-600" y="-2590" color="#0000ff">
+	</location>	<location id="id111" x="-300" y="-1200" color="#0000ff">
+	<name x="-290" y="-1200">Else16</name>
+	</location>	<location id="id112" x="-450" y="-2640" color="#0000ff">
+	</location>	<location id="id113" x="0" y="-865" color="#0000ff">
+	<name x="10" y="-865">Default3</name>
+	</location>	<location id="id114" x="0" y="-2690" color="#0000ff">
+	</location>	<location id="id115" x="300" y="-765" color="#0000ff">
+	<name x="310" y="-765">Else17</name>
+	</location>	<location id="id116" x="150" y="-2740" color="#0000ff">
+	</location>	<location id="id117" x="150" y="-2795" color="#0000ff">
+	<name x="160" y="-2795">Assignment32</name>
+	</location>	<location id="id118" x="-100" y="-665" color="#0000ff">
+	<name x="-90" y="-665">id118</name>
+	</location>	<location id="id119" x="-250" y="-715" color="#0000ff">
+	<name x="-240" y="-715">If18</name>
+	</location>	<location id="id120" x="-250" y="-770" color="#0000ff">
+	<name x="-240" y="-770">Assignment33</name>
+	</location>	<location id="id121" x="-250" y="-825" color="#0000ff">
+	<name x="-240" y="-825">Assignment34</name>
+	</location>	<location id="id122" x="-250" y="-915" color="#0000ff">
+	<name x="-240" y="-915">Send2</name>
+	</location>	<location id="id123" x="-250" y="-970" color="#0000ff">
+	<name x="-240" y="-970">Assignment35</name>
+	</location>	<location id="id124" x="50" y="-715" color="#0000ff">
+	<name x="60" y="-715">Else18</name>
+	</location>	<location id="id125" x="-100" y="-2845" color="#0000ff">
+	</location>	<location id="id126" x="-100" y="-510" color="#0000ff">
+	<name x="-90" y="-510">id126</name>
+	</location>	<location id="id127" x="0" y="-2895" color="#0000ff">
+	</location>	<location id="id128" x="0" y="-2950" color="#0000ff">
+	<name x="10" y="-2950">Assignment36</name>
+	</location>	<location id="id129" x="-250" y="-260" color="#0000ff">
+	<name x="-240" y="-260">id129</name>
+	</location>	<location id="id130" x="-250" y="-310" color="#0000ff">
+	<name x="-240" y="-310">Marker6</name>
+	</location>		
+		<init ref="id0"/>
+			<transition>
+	<source ref="id0"/>
+	<target ref="id1"/>
+		<label kind="guard" x="-100" y="-30">pid==0</label>
+		</transition>	<transition>
+	<source ref="id1"/>
+	<target ref="id2"/>
+		<label kind="assignment" x="-145" y="-85">hasToken=true</label>
+		</transition>	<transition>
+	<source ref="id0"/>
+	<target ref="id3"/>
+		<label kind="guard" x="100" y="-30">!(pid==0)</label>
+		</transition>	<transition>
+	<source ref="id2"/>
+	<target ref="id4"/>
+			</transition>	<transition>
+	<source ref="id3"/>
+	<target ref="id4"/>
+			</transition>	<transition>
+	<source ref="id4"/>
+	<target ref="id5"/>
+		<label kind="assignment" x="5" y="-190">i=0</label>
+		</transition>	<transition>
+	<source ref="id5"/>
+	<target ref="id6"/>
+			</transition>	<transition>
+	<source ref="id6"/>
+	<target ref="id7"/>
+		<label kind="guard" x="5" y="-290">i&lt;5</label>
+		</transition>	<transition>
+	<source ref="id7"/>
+	<target ref="id8"/>
+		<label kind="guard" x="-100" y="-340">!hasToken</label>
+		</transition>	<transition>
+	<source ref="id8"/>
+	<target ref="id9"/>
+		<label kind="guard" x="-250" y="-390">!wasInCs</label>
+		</transition>	<transition>
+	<source ref="id9"/>
+	<target ref="id10"/>
+		<label kind="assignment" x="-295" y="-445">broadcastCounter = 0</label>
+		</transition>	<transition>
+	<source ref="id10"/>
+	<target ref="id11"/>
+			</transition>	<transition>
+	<source ref="id11"/>
+	<target ref="id12"/>
+		<label kind="guard" x="-295" y="-545">broadcastCounter &lt; NODES</label>
+		</transition>	<transition>
+	<source ref="id12"/>
+	<target ref="id13"/>
+		<label kind="guard" x="-400" y="-595">pid != broadcastCounter</label>
+		</transition>	<transition>
+	<source ref="id12"/>
+	<target ref="id14"/>
+		<label kind="guard" x="-200" y="-595">pid == broadcastCounter</label>
+		</transition>	<transition>
+	<source ref="id13"/>
+	<target ref="id15"/>
+		<label kind="guard" x="-445" y="-710">bool_chanRequestSize[getSendIndex(pid, broadcastCounter)] &lt; bool_chanRequestBuffer</label>
+	<label kind="assignment" x="-445" y="-685">bool_chanRequestVar[getSendIndex(pid,broadcastCounter)] = true,
+bool_chanRequestSize[getSendIndex(pid, broadcastCounter)]++</label>
+		</transition>	<transition>
+	<source ref="id15"/>
+	<target ref="id16"/>
+			</transition>	<transition>
+	<source ref="id14"/>
+	<target ref="id16"/>
+			</transition>	<transition>
+	<source ref="id16"/>
+	<target ref="id17"/>
+		<label kind="assignment" x="-295" y="-820">broadcastCounter++</label>
+		</transition>	<transition>
+	<source ref="id17"/>
+	<target ref="id11"/>
+			<nail x="-100" y="-840"/>
+	<nail x="-100" y="-515"/>
+	</transition>	<transition>
+	<source ref="id11"/>
+	<target ref="id18"/>
+		<label kind="guard" x="-400" y="-530">!(broadcastCounter &lt; NODES)</label>
+		</transition>	<transition>
+	<source ref="id18"/>
+	<target ref="id19"/>
+			</transition>	<transition>
+	<source ref="id19"/>
+	<target ref="id20"/>
+		<label kind="guard" x="-545" y="-595">!hasToken</label>
+		</transition>	<transition>
+	<source ref="id20"/>
+	<target ref="id21"/>
+		<label kind="assignment" x="-545" y="-650">i=0</label>
+		</transition>	<transition>
+	<source ref="id21"/>
+	<target ref="id22"/>
+			</transition>	<transition>
+	<source ref="id22"/>
+	<target ref="id23"/>
+		<label kind="guard" x="-545" y="-750">i&lt;NODES</label>
+		</transition>	<transition>
+	<source ref="id23"/>
+	<target ref="id24"/>
+		<label kind="guard" x="-650" y="-800">i!=pid</label>
+		</transition>	<transition>
+	<source ref="id24"/>
+	<target ref="id25"/>
+		<label kind="synchronisation" x="-895" y="-860">int_chanReplyChan[getReceiveIndex(pid,i)]?</label>
+	<label kind="assignment" x="-895" y="-885">replyMsg = int_chanReplyVar[getReceiveIndex(pid,i)]</label>
+		</transition>	<transition>
+	<source ref="id25"/>
+	<target ref="id26"/>
+			</transition>	<transition>
+	<source ref="id26"/>
+	<target ref="id27"/>
+		<label kind="assignment" x="-895" y="-995">hasToken=true</label>
+		</transition>	<transition>
+	<source ref="id27"/>
+	<target ref="id28"/>
+		<label kind="assignment" x="-895" y="-1050">queue=replyMsg</label>
+		</transition>	<transition>
+	<source ref="id24"/>
+	<target ref="id29"/>
+			</transition>	<transition>
+	<source ref="id28"/>
+	<target ref="id30"/>
+			</transition>	<transition>
+	<source ref="id29"/>
+	<target ref="id30"/>
+			</transition>	<transition>
+	<source ref="id23"/>
+	<target ref="id31"/>
+		<label kind="guard" x="-450" y="-800">!(i!=pid)</label>
+		</transition>	<transition>
+	<source ref="id30"/>
+	<target ref="id32"/>
+			</transition>	<transition>
+	<source ref="id31"/>
+	<target ref="id32"/>
+			</transition>	<transition>
+	<source ref="id32"/>
+	<target ref="id33"/>
+		<label kind="assignment" x="-545" y="-1205">i++</label>
+		</transition>	<transition>
+	<source ref="id33"/>
+	<target ref="id22"/>
+			<nail x="-350" y="-1225"/>
+	<nail x="-350" y="-720"/>
+	</transition>	<transition>
+	<source ref="id22"/>
+	<target ref="id34"/>
+		<label kind="guard" x="-650" y="-735">!(i&lt;NODES)</label>
+		</transition>	<transition>
+	<source ref="id34"/>
+	<target ref="id19"/>
+			<nail x="-350" y="-720"/>
+	<nail x="-350" y="-565"/>
+	</transition>	<transition>
+	<source ref="id19"/>
+	<target ref="id35"/>
+		<label kind="guard" x="-650" y="-580">!(!hasToken)</label>
+		</transition>	<transition>
+	<source ref="id8"/>
+	<target ref="id36"/>
+		<label kind="guard" x="-50" y="-390">!(!wasInCs)</label>
+		</transition>	<transition>
+	<source ref="id35"/>
+	<target ref="id37"/>
+			</transition>	<transition>
+	<source ref="id36"/>
+	<target ref="id37"/>
+			</transition>	<transition>
+	<source ref="id37"/>
+	<target ref="id38"/>
+		<label kind="assignment" x="-145" y="-1310">i=0</label>
+		</transition>	<transition>
+	<source ref="id38"/>
+	<target ref="id39"/>
+			</transition>	<transition>
+	<source ref="id39"/>
+	<target ref="id40"/>
+		<label kind="guard" x="-145" y="-1410">i&lt;NODES</label>
+		</transition>	<transition>
+	<source ref="id40"/>
+	<target ref="id41"/>
+		<label kind="guard" x="-250" y="-1460">i!=pid</label>
+		</transition>	<transition>
+	<source ref="id41"/>
+	<target ref="id42"/>
+		<label kind="guard" x="-495" y="-1575">bool_chanRequestSize[getReceiveIndex(pid, i)] != 0</label>
+	<label kind="assignment" x="-495" y="-1550">requestMsg = bool_chanRequestVar[getReceiveIndex(pid,i)],
+bool_chanRequestSize[getReceiveIndex(pid, i)]--</label>
+		</transition>	<transition>
+	<source ref="id42"/>
+	<target ref="id43"/>
+			</transition>	<transition>
+	<source ref="id43"/>
+	<target ref="id44"/>
+		<label kind="assignment" x="-495" y="-1685">tempQueue=queue</label>
+		</transition>	<transition>
+	<source ref="id44"/>
+	<target ref="id45"/>
+		<label kind="assignment" x="-495" y="-1740">queueSize=0</label>
+		</transition>	<transition>
+	<source ref="id45"/>
+	<target ref="id46"/>
+		<label kind="assignment" x="-495" y="-1795">pidIsInQueue=false</label>
+		</transition>	<transition>
+	<source ref="id46"/>
+	<target ref="id47"/>
+			</transition>	<transition>
+	<source ref="id47"/>
+	<target ref="id48"/>
+		<label kind="guard" x="-495" y="-1895">tempQueue%10!=0</label>
+		</transition>	<transition>
+	<source ref="id48"/>
+	<target ref="id49"/>
+		<label kind="assignment" x="-495" y="-1950">queueSize++</label>
+		</transition>	<transition>
+	<source ref="id49"/>
+	<target ref="id50"/>
+		<label kind="guard" x="-600" y="-2000">i+1==tempQueue%10</label>
+		</transition>	<transition>
+	<source ref="id50"/>
+	<target ref="id51"/>
+		<label kind="assignment" x="-645" y="-2055">pidIsInQueue=true</label>
+		</transition>	<transition>
+	<source ref="id49"/>
+	<target ref="id52"/>
+		<label kind="guard" x="-400" y="-2000">!(i+1==tempQueue%10)</label>
+		</transition>	<transition>
+	<source ref="id51"/>
+	<target ref="id53"/>
+			</transition>	<transition>
+	<source ref="id52"/>
+	<target ref="id53"/>
+			</transition>	<transition>
+	<source ref="id53"/>
+	<target ref="id54"/>
+		<label kind="assignment" x="-495" y="-2160">tempQueue=tempQueue/10</label>
+		</transition>	<transition>
+	<source ref="id54"/>
+	<target ref="id47"/>
+			<nail x="-300" y="-2180"/>
+	<nail x="-300" y="-1865"/>
+	</transition>	<transition>
+	<source ref="id47"/>
+	<target ref="id55"/>
+		<label kind="guard" x="-600" y="-1880">!(tempQueue%10!=0)</label>
+		</transition>	<transition>
+	<source ref="id55"/>
+	<target ref="id56"/>
+		<label kind="guard" x="-850" y="-1895">!pidIsInQueue</label>
+		</transition>	<transition>
+	<source ref="id56"/>
+	<target ref="id57"/>
+		<label kind="guard" x="-1000" y="-1945">queueSize==0</label>
+		</transition>	<transition>
+	<source ref="id57"/>
+	<target ref="id58"/>
+		<label kind="assignment" x="-1045" y="-2000">queue+=i+1</label>
+		</transition>	<transition>
+	<source ref="id56"/>
+	<target ref="id59"/>
+		<label kind="guard" x="-800" y="-1945">!(queueSize==0)</label>
+		</transition>	<transition>
+	<source ref="id59"/>
+	<target ref="id60"/>
+		<label kind="guard" x="-650" y="-1995">!(queueSize==1)</label>
+		</transition>	<transition>
+	<source ref="id59"/>
+	<target ref="id61"/>
+		<label kind="guard" x="-850" y="-1995">queueSize==1</label>
+		</transition>	<transition>
+	<source ref="id61"/>
+	<target ref="id62"/>
+		<label kind="assignment" x="-895" y="-2050">queue+=(i+1)*10</label>
+		</transition>	<transition>
+	<source ref="id60"/>
+	<target ref="id63"/>
+		<label kind="guard" x="-500" y="-2045">!(queueSize==2)</label>
+		</transition>	<transition>
+	<source ref="id60"/>
+	<target ref="id64"/>
+		<label kind="guard" x="-700" y="-2045">queueSize==2</label>
+		</transition>	<transition>
+	<source ref="id64"/>
+	<target ref="id65"/>
+		<label kind="assignment" x="-745" y="-2100">queue+=(i+1)*100</label>
+		</transition>	<transition>
+	<source ref="id63"/>
+	<target ref="id66"/>
+		<label kind="assignment" x="-445" y="-2100">queue+=(i+1)*1000</label>
+		</transition>	<transition>
+	<source ref="id58"/>
+	<target ref="id67"/>
+			</transition>	<transition>
+	<source ref="id62"/>
+	<target ref="id67"/>
+			</transition>	<transition>
+	<source ref="id65"/>
+	<target ref="id67"/>
+			</transition>	<transition>
+	<source ref="id66"/>
+	<target ref="id67"/>
+			</transition>	<transition>
+	<source ref="id55"/>
+	<target ref="id68"/>
+		<label kind="guard" x="-650" y="-1895">!(!pidIsInQueue)</label>
+		</transition>	<transition>
+	<source ref="id67"/>
+	<target ref="id69"/>
+			</transition>	<transition>
+	<source ref="id68"/>
+	<target ref="id69"/>
+			</transition>	<transition>
+	<source ref="id41"/>
+	<target ref="id70"/>
+		<label kind="guard" x="-325" y="-1560">bool_chanRequestSize[getReceiveIndex(pid,i)] == 0</label>
+		</transition>	<transition>
+	<source ref="id69"/>
+	<target ref="id71"/>
+			</transition>	<transition>
+	<source ref="id70"/>
+	<target ref="id71"/>
+			</transition>	<transition>
+	<source ref="id40"/>
+	<target ref="id72"/>
+		<label kind="guard" x="-50" y="-1460">!(i!=pid)</label>
+		</transition>	<transition>
+	<source ref="id71"/>
+	<target ref="id73"/>
+			</transition>	<transition>
+	<source ref="id72"/>
+	<target ref="id73"/>
+			</transition>	<transition>
+	<source ref="id73"/>
+	<target ref="id74"/>
+		<label kind="assignment" x="-145" y="-2415">i++</label>
+		</transition>	<transition>
+	<source ref="id74"/>
+	<target ref="id39"/>
+			<nail x="50" y="-2435"/>
+	<nail x="50" y="-1380"/>
+	</transition>	<transition>
+	<source ref="id39"/>
+	<target ref="id75"/>
+		<label kind="guard" x="-250" y="-1395">!(i&lt;NODES)</label>
+		</transition>	<transition>
+	<source ref="id7"/>
+	<target ref="id76"/>
+		<label kind="guard" x="100" y="-340">!(!hasToken)</label>
+		</transition>	<transition>
+	<source ref="id76"/>
+	<target ref="id77"/>
+			</transition>	<transition>
+	<source ref="id77"/>
+	<target ref="id78"/>
+			</transition>	<transition>
+	<source ref="id78"/>
+	<target ref="id79"/>
+			</transition>	<transition>
+	<source ref="id79"/>
+	<target ref="id80"/>
+		<label kind="guard" x="155" y="-540">hasToken</label>
+		</transition>	<transition>
+	<source ref="id80"/>
+	<target ref="id81"/>
+		<label kind="assignment" x="155" y="-595">i=0</label>
+		</transition>	<transition>
+	<source ref="id81"/>
+	<target ref="id82"/>
+			</transition>	<transition>
+	<source ref="id82"/>
+	<target ref="id83"/>
+		<label kind="guard" x="155" y="-695">i&lt;NODES</label>
+		</transition>	<transition>
+	<source ref="id83"/>
+	<target ref="id84"/>
+		<label kind="guard" x="50" y="-745">i!=pid</label>
+		</transition>	<transition>
+	<source ref="id84"/>
+	<target ref="id85"/>
+		<label kind="guard" x="-195" y="-860">bool_chanRequestSize[getReceiveIndex(pid, i)] != 0</label>
+	<label kind="assignment" x="-195" y="-835">requestMsg = bool_chanRequestVar[getReceiveIndex(pid,i)],
+bool_chanRequestSize[getReceiveIndex(pid, i)]--</label>
+		</transition>	<transition>
+	<source ref="id85"/>
+	<target ref="id86"/>
+			</transition>	<transition>
+	<source ref="id86"/>
+	<target ref="id87"/>
+		<label kind="assignment" x="-195" y="-970">tempQueue=queue</label>
+		</transition>	<transition>
+	<source ref="id87"/>
+	<target ref="id88"/>
+		<label kind="assignment" x="-195" y="-1025">queueSize=0</label>
+		</transition>	<transition>
+	<source ref="id88"/>
+	<target ref="id89"/>
+		<label kind="assignment" x="-195" y="-1080">pidIsInQueue=false</label>
+		</transition>	<transition>
+	<source ref="id89"/>
+	<target ref="id90"/>
+			</transition>	<transition>
+	<source ref="id90"/>
+	<target ref="id91"/>
+		<label kind="guard" x="-195" y="-1180">tempQueue%10!=0</label>
+		</transition>	<transition>
+	<source ref="id91"/>
+	<target ref="id92"/>
+		<label kind="assignment" x="-195" y="-1235">queueSize++</label>
+		</transition>	<transition>
+	<source ref="id92"/>
+	<target ref="id93"/>
+		<label kind="guard" x="-300" y="-1285">i+1==tempQueue%10</label>
+		</transition>	<transition>
+	<source ref="id93"/>
+	<target ref="id94"/>
+		<label kind="assignment" x="-345" y="-1340">pidIsInQueue=true</label>
+		</transition>	<transition>
+	<source ref="id92"/>
+	<target ref="id95"/>
+		<label kind="guard" x="-100" y="-1285">!(i+1==tempQueue%10)</label>
+		</transition>	<transition>
+	<source ref="id94"/>
+	<target ref="id96"/>
+			</transition>	<transition>
+	<source ref="id95"/>
+	<target ref="id96"/>
+			</transition>	<transition>
+	<source ref="id96"/>
+	<target ref="id97"/>
+		<label kind="assignment" x="-195" y="-2520">tempQueue=tempQueue/10</label>
+		</transition>	<transition>
+	<source ref="id97"/>
+	<target ref="id90"/>
+			<nail x="0" y="-2540"/>
+	<nail x="0" y="-1150"/>
+	</transition>	<transition>
+	<source ref="id90"/>
+	<target ref="id98"/>
+		<label kind="guard" x="-300" y="-1165">!(tempQueue%10!=0)</label>
+		</transition>	<transition>
+	<source ref="id98"/>
+	<target ref="id99"/>
+		<label kind="guard" x="-550" y="-1180">!pidIsInQueue</label>
+		</transition>	<transition>
+	<source ref="id99"/>
+	<target ref="id100"/>
+		<label kind="guard" x="-700" y="-1230">queueSize==0</label>
+		</transition>	<transition>
+	<source ref="id100"/>
+	<target ref="id101"/>
+		<label kind="assignment" x="-745" y="-1285">queue+=i+1</label>
+		</transition>	<transition>
+	<source ref="id99"/>
+	<target ref="id102"/>
+		<label kind="guard" x="-500" y="-1230">!(queueSize==0)</label>
+		</transition>	<transition>
+	<source ref="id102"/>
+	<target ref="id103"/>
+		<label kind="guard" x="-350" y="-1280">!(queueSize==1)</label>
+		</transition>	<transition>
+	<source ref="id102"/>
+	<target ref="id104"/>
+		<label kind="guard" x="-550" y="-1280">queueSize==1</label>
+		</transition>	<transition>
+	<source ref="id104"/>
+	<target ref="id105"/>
+		<label kind="assignment" x="-595" y="-1335">queue+=(i+1)*10</label>
+		</transition>	<transition>
+	<source ref="id103"/>
+	<target ref="id106"/>
+		<label kind="guard" x="-200" y="-1330">!(queueSize==2)</label>
+		</transition>	<transition>
+	<source ref="id103"/>
+	<target ref="id107"/>
+		<label kind="guard" x="-400" y="-1330">queueSize==2</label>
+		</transition>	<transition>
+	<source ref="id107"/>
+	<target ref="id108"/>
+		<label kind="assignment" x="-445" y="-1385">queue+=(i+1)*100</label>
+		</transition>	<transition>
+	<source ref="id106"/>
+	<target ref="id109"/>
+		<label kind="assignment" x="-145" y="-1385">queue+=(i+1)*1000</label>
+		</transition>	<transition>
+	<source ref="id101"/>
+	<target ref="id110"/>
+			</transition>	<transition>
+	<source ref="id105"/>
+	<target ref="id110"/>
+			</transition>	<transition>
+	<source ref="id108"/>
+	<target ref="id110"/>
+			</transition>	<transition>
+	<source ref="id109"/>
+	<target ref="id110"/>
+			</transition>	<transition>
+	<source ref="id98"/>
+	<target ref="id111"/>
+		<label kind="guard" x="-350" y="-1180">!(!pidIsInQueue)</label>
+		</transition>	<transition>
+	<source ref="id110"/>
+	<target ref="id112"/>
+			</transition>	<transition>
+	<source ref="id111"/>
+	<target ref="id112"/>
+			</transition>	<transition>
+	<source ref="id84"/>
+	<target ref="id113"/>
+		<label kind="guard" x="-25" y="-845">bool_chanRequestSize[getReceiveIndex(pid,i)] == 0</label>
+		</transition>	<transition>
+	<source ref="id112"/>
+	<target ref="id114"/>
+			</transition>	<transition>
+	<source ref="id113"/>
+	<target ref="id114"/>
+			</transition>	<transition>
+	<source ref="id83"/>
+	<target ref="id115"/>
+		<label kind="guard" x="250" y="-745">!(i!=pid)</label>
+		</transition>	<transition>
+	<source ref="id114"/>
+	<target ref="id116"/>
+			</transition>	<transition>
+	<source ref="id115"/>
+	<target ref="id116"/>
+			</transition>	<transition>
+	<source ref="id116"/>
+	<target ref="id117"/>
+		<label kind="assignment" x="155" y="-2775">i++</label>
+		</transition>	<transition>
+	<source ref="id117"/>
+	<target ref="id82"/>
+			<nail x="350" y="-2795"/>
+	<nail x="350" y="-665"/>
+	</transition>	<transition>
+	<source ref="id82"/>
+	<target ref="id118"/>
+		<label kind="guard" x="50" y="-680">!(i&lt;NODES)</label>
+		</transition>	<transition>
+	<source ref="id118"/>
+	<target ref="id119"/>
+		<label kind="guard" x="-200" y="-695">queue!=0</label>
+		</transition>	<transition>
+	<source ref="id119"/>
+	<target ref="id120"/>
+		<label kind="assignment" x="-245" y="-750">hasToken=false</label>
+		</transition>	<transition>
+	<source ref="id120"/>
+	<target ref="id121"/>
+		<label kind="assignment" x="-245" y="-805">wasInCs=true</label>
+		</transition>	<transition>
+	<source ref="id121"/>
+	<target ref="id122"/>
+		<label kind="synchronisation" x="-245" y="-865">int_chanReplyChan[getSendIndex(pid,(queue%10)-1)]!</label>
+	<label kind="assignment" x="-245" y="-890">int_chanReplyVar[getSendIndex(pid,(queue%10)-1)] = queue/10</label>
+		</transition>	<transition>
+	<source ref="id122"/>
+	<target ref="id123"/>
+		<label kind="assignment" x="-245" y="-950">queue=queue/10</label>
+		</transition>	<transition>
+	<source ref="id118"/>
+	<target ref="id124"/>
+		<label kind="guard" x="0" y="-695">!(queue!=0)</label>
+		</transition>	<transition>
+	<source ref="id123"/>
+	<target ref="id125"/>
+			</transition>	<transition>
+	<source ref="id124"/>
+	<target ref="id125"/>
+			</transition>	<transition>
+	<source ref="id125"/>
+	<target ref="id79"/>
+			<nail x="350" y="-2845"/>
+	<nail x="350" y="-510"/>
+	</transition>	<transition>
+	<source ref="id79"/>
+	<target ref="id126"/>
+		<label kind="guard" x="50" y="-525">!(hasToken)</label>
+		</transition>	<transition>
+	<source ref="id75"/>
+	<target ref="id127"/>
+			</transition>	<transition>
+	<source ref="id126"/>
+	<target ref="id127"/>
+			</transition>	<transition>
+	<source ref="id127"/>
+	<target ref="id128"/>
+		<label kind="assignment" x="5" y="-2930">i++</label>
+		</transition>	<transition>
+	<source ref="id128"/>
+	<target ref="id6"/>
+			<nail x="200" y="-2950"/>
+	<nail x="200" y="-260"/>
+	</transition>	<transition>
+	<source ref="id6"/>
+	<target ref="id129"/>
+		<label kind="guard" x="-100" y="-275">!(i&lt;5)</label>
+		</transition>	<transition>
+	<source ref="id129"/>
+	<target ref="id130"/>
+			</transition>		
+	</template>
+<system>node0 = node(0);
+node1 = node(1);
+node2 = node(2);
+node3 = node(3);
+
+system node0,node1,node2,node3;</system>
+<queries>
+</queries>
+</nta>

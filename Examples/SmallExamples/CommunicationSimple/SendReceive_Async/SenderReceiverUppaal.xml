@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
+<nta>
+	<declaration>const int NODES = 2;
+const int EDGES = 2;
+
+const int chanMsgBuffer = 1;
+int chanMsgVar[EDGES];
+int chanMsgSize[EDGES];
+
+
+
+//-------------------Dialgo Code---------------------
+
+int getReceiveIndex(int pidA, int pidB){
+    int in = 0;
+    if (pidA &gt; pidB) {
+		in = pidA - 1;
+	} else {
+		in = pidA;
+	}
+	return ((NODES - 1) * pidB) + in;
+}
+
+int getSendIndex(int pidA, int pidB){
+    int in = 0;
+    if (pidB &gt; pidA) {
+		in = pidB - 1;
+	} else {
+		in = pidB;
+	}
+	return ((NODES - 1) * pidA) + in;
+}
+</declaration>
+	<template>
+		<name x="5" y="5">Sender</name>
+		<parameter>const int pid</parameter>
+		<location id="id0" x="-314" y="17">
+			<name x="-297" y="0">Start</name>
+		</location>
+		<location id="id1" x="-314" y="-102">
+			<name x="-297" y="-119">End</name>
+		</location>
+		<init ref="id0"/>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id1"/>
+			<label kind="guard" x="-306" y="-76">chanMsgSize[getSendIndex(pid, 1)] &lt; chanMsgBuffer</label>
+			<label kind="assignment" x="-306" y="-59">chanMsgVar[getSendIndex(pid,1)] = 42,
+chanMsgSize[getSendIndex(pid, 1)]++</label>
+		</transition>
+	</template>
+	<template>
+		<name>Receiver</name>
+		<parameter>const int pid</parameter>
+		<declaration>int i;</declaration>
+		<location id="id2" x="0" y="-8">
+			<name x="8" y="-33">Start</name>
+		</location>
+		<location id="id3" x="0" y="-127">
+			<name x="17" y="-152">End</name>
+		</location>
+		<init ref="id2"/>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id3"/>
+			<label kind="guard" x="-280" y="-93">chanMsgSize[getReceiveIndex(pid, 0)] != 0</label>
+			<label kind="assignment" x="-263" y="-68">i = chanMsgVar[getReceiveIndex(pid,0)],
+chanMsgSize[getReceiveIndex(pid, 0)]--</label>
+		</transition>
+	</template>
+	<system>sender = Sender(0);
+receiver = Receiver(1);
+
+system receiver, sender;
+    </system>
+	<queries>
+		<query>
+			<formula>A[] deadlock imply sender.End</formula>
+			<comment></comment>
+		</query>
+	</queries>
+</nta>

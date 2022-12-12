@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
+<nta>
+	<declaration>const int NODES = 2;
+const int EDGES = 2;
+
+const int chanMsgBuffer = 2;
+int chanMsgVar[EDGES][chanMsgBuffer];
+int chanMsgSize[EDGES];
+int chanMsgWriteIndex[EDGES];
+bool chanMsgState[EDGES][chanMsgBuffer];
+
+
+
+//-------------------Dialgo Code---------------------
+
+int getReceiveIndex(int pidA, int pidB){
+    int in = 0;
+    if (pidA &gt; pidB) {
+		in = pidA - 1;
+	} else {
+		in = pidA;
+	}
+	return ((NODES - 1) * pidB) + in;
+}
+
+int getSendIndex(int pidA, int pidB){
+    int in = 0;
+    if (pidB &gt; pidA) {
+		in = pidB - 1;
+	} else {
+		in = pidB;
+	}
+	return ((NODES - 1) * pidA) + in;
+}
+
+int setNewChanIndex(int index){
+    if(index == chanMsgBuffer - 1){
+        return 0;
+    }else{
+        return index + 1;
+    }
+}
+
+int setNewChanIndexNonFifo(bool chanState[EDGES][chanMsgBuffer], int pidA, int pidB){
+    int i;
+    for(i = 0; i &lt; chanMsgBuffer; i++){
+        if(chanState[getSendIndex(pidA, pidB)][i] == false){
+            return i;
+        }
+    }
+    return -1; 
+}</declaration>
+	<template>
+		<name x="5" y="5">Sender</name>
+		<parameter>const int pid</parameter>
+		<location id="id0" x="-314" y="34">
+			<name x="-297" y="17">Start</name>
+		</location>
+		<location id="id1" x="-314" y="-102">
+		</location>
+		<location id="id2" x="-314" y="-238">
+		</location>
+		<location id="id3" x="-314" y="-374">
+			<name x="-324" y="-408">End</name>
+		</location>
+		<init ref="id0"/>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id3"/>
+			<label kind="guard" x="-306" y="-348">chanMsgSize[getSendIndex(pid, 1)] &lt; chanMsgBuffer</label>
+			<label kind="assignment" x="-306" y="-331">chanMsgWriteIndex[getSendIndex(pid, 1)] = setNewChanIndexNonFifo(chanMsgState, pid, 1),
+chanMsgVar[getSendIndex(pid,1)][chanMsgWriteIndex[getSendIndex(pid,1)]] = 4200,
+chanMsgState[getSendIndex(pid, 1)][chanMsgWriteIndex[getSendIndex(pid, 1)]] = true,
+chanMsgSize[getSendIndex(pid, 1)]++</label>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id2"/>
+			<label kind="guard" x="-306" y="-212">chanMsgSize[getSendIndex(pid, 1)] &lt; chanMsgBuffer</label>
+			<label kind="assignment" x="-306" y="-195">chanMsgWriteIndex[getSendIndex(pid, 1)] = setNewChanIndexNonFifo(chanMsgState, pid, 1),
+chanMsgVar[getSendIndex(pid,1)][chanMsgWriteIndex[getSendIndex(pid,1)]] = 420,
+chanMsgState[getSendIndex(pid, 1)][chanMsgWriteIndex[getSendIndex(pid, 1)]] = true,
+chanMsgSize[getSendIndex(pid, 1)]++</label>
+		</transition>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id1"/>
+			<label kind="guard" x="-306" y="-76">chanMsgSize[getSendIndex(pid, 1)] &lt; chanMsgBuffer</label>
+			<label kind="assignment" x="-306" y="-59">chanMsgWriteIndex[getSendIndex(pid, 1)] = setNewChanIndexNonFifo(chanMsgState, pid, 1),
+chanMsgVar[getSendIndex(pid,1)][chanMsgWriteIndex[getSendIndex(pid,1)]] = 42,
+chanMsgState[getSendIndex(pid, 1)][chanMsgWriteIndex[getSendIndex(pid, 1)]] = true,
+chanMsgSize[getSendIndex(pid, 1)]++</label>
+		</transition>
+	</template>
+	<template>
+		<name>Receiver</name>
+		<parameter>const int pid</parameter>
+		<declaration>int chanMsgReadTemp;
+
+int i;</declaration>
+		<location id="id4" x="0" y="-59">
+			<name x="8" y="-84">Start</name>
+		</location>
+		<location id="id5" x="0" y="-127">
+		</location>
+		<location id="id6" x="0" y="-212">
+		</location>
+		<location id="id7" x="0" y="-323">
+		</location>
+		<init ref="id4"/>
+		<transition>
+			<source ref="id7"/>
+			<target ref="id4"/>
+			<nail x="-59" y="-323"/>
+			<nail x="-59" y="-59"/>
+		</transition>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id5"/>
+			<label kind="guard" x="-391" y="-187">!chanMsgState[getReceiveIndex(pid,0)][chanMsgReadTemp]</label>
+			<nail x="-33" y="-212"/>
+			<nail x="-33" y="-127"/>
+		</transition>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id7"/>
+			<label kind="guard" x="8" y="-306">chanMsgState[getReceiveIndex(pid,0)][chanMsgReadTemp]</label>
+			<label kind="assignment" x="8" y="-289">i = chanMsgVar[getReceiveIndex(pid,0)][chanMsgReadTemp],
+chanMsgSize[getReceiveIndex(pid, 0)]--,
+chanMsgState[getReceiveIndex(pid,0)][chanMsgReadTemp] = false</label>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id6"/>
+			<label kind="select" x="8" y="-187">x:int[0,chanMsgBuffer-1]</label>
+			<label kind="assignment" x="8" y="-170">chanMsgReadTemp = x</label>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id5"/>
+			<label kind="guard" x="8" y="-110">chanMsgSize[getReceiveIndex(pid, 0)] != 0</label>
+		</transition>
+	</template>
+	<system>sender = Sender(0);
+receiver = Receiver(1);
+
+system receiver, sender;
+    </system>
+	<queries>
+		<query>
+			<formula>A[] deadlock imply sender.End</formula>
+			<comment></comment>
+		</query>
+	</queries>
+</nta>

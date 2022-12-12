@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
+<nta>
+	<declaration>const int NODES = 2;
+const int EDGES = 2;
+
+const int chanMsgBuffer = 2;
+int chanMsgVar[EDGES][chanMsgBuffer];
+int chanMsgSize[EDGES];
+int chanMsgReadIndex[EDGES];
+int chanMsgWriteIndex[EDGES];
+
+
+
+//-------------------Dialgo Code---------------------
+
+int getReceiveIndex(int pidA, int pidB){
+    int in = 0;
+    if (pidA &gt; pidB) {
+		in = pidA - 1;
+	} else {
+		in = pidA;
+	}
+	return ((NODES - 1) * pidB) + in;
+}
+
+int getSendIndex(int pidA, int pidB){
+    int in = 0;
+    if (pidB &gt; pidA) {
+		in = pidB - 1;
+	} else {
+		in = pidB;
+	}
+	return ((NODES - 1) * pidA) + in;
+}
+
+int setNewChanIndex(int index, int bufferSize){
+    if(index == bufferSize - 1){
+        return 0;
+    }else{
+        return index + 1;
+    }
+}</declaration>
+	<template>
+		<name x="5" y="5">Sender</name>
+		<parameter>const int pid</parameter>
+		<location id="id0" x="-314" y="17">
+			<name x="-297" y="0">Start</name>
+		</location>
+		<location id="id1" x="-314" y="-102">
+			<name x="-297" y="-119">Send1</name>
+		</location>
+		<location id="id2" x="-314" y="-221">
+			<name x="-306" y="-246">End</name>
+		</location>
+		<init ref="id0"/>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id2"/>
+			<label kind="guard" x="-306" y="-195">chanMsgSize[getSendIndex(pid, 1)] &lt; chanMsgBuffer</label>
+			<label kind="assignment" x="-306" y="-178">chanMsgVar[getSendIndex(pid,1)][chanMsgWriteIndex[getSendIndex(pid,1)]] = 420,
+chanMsgSize[getSendIndex(pid, 1)]++,
+chanMsgWriteIndex[getSendIndex(pid, 1)] = setNewChanIndex(chanMsgWriteIndex[getSendIndex(pid, 1)], chanMsgBuffer)</label>
+		</transition>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id1"/>
+			<label kind="guard" x="-306" y="-76">chanMsgSize[getSendIndex(pid, 1)] &lt; chanMsgBuffer</label>
+			<label kind="assignment" x="-306" y="-59">chanMsgVar[getSendIndex(pid,1)][chanMsgWriteIndex[getSendIndex(pid,1)]] = 42,
+chanMsgSize[getSendIndex(pid, 1)]++,
+chanMsgWriteIndex[getSendIndex(pid, 1)] = setNewChanIndex(chanMsgWriteIndex[getSendIndex(pid, 1)], chanMsgBuffer)</label>
+		</transition>
+	</template>
+	<template>
+		<name>Receiver</name>
+		<parameter>const int pid</parameter>
+		<declaration>int i;
+int j;</declaration>
+		<location id="id3" x="0" y="8">
+			<name x="8" y="-17">Start</name>
+		</location>
+		<location id="id4" x="0" y="-127">
+			<name x="8" y="-153">Receive1</name>
+		</location>
+		<location id="id5" x="0" y="-255">
+			<name x="8" y="-280">End</name>
+		</location>
+		<init ref="id3"/>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id5"/>
+			<label kind="guard" x="-688" y="-246">chanMsgSize[getReceiveIndex(pid, 0)] != 0</label>
+			<label kind="assignment" x="-688" y="-229">j = chanMsgVar[getReceiveIndex(pid,0)][chanMsgReadIndex[getReceiveIndex(pid,0)]],
+chanMsgSize[getReceiveIndex(pid, 0)]--,
+chanMsgReadIndex[getReceiveIndex(pid, 0)] = setNewChanIndex(chanMsgReadIndex[getReceiveIndex(pid, 0)],chanMsgBuffer)</label>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id4"/>
+			<label kind="guard" x="-688" y="-111">chanMsgSize[getReceiveIndex(pid, 0)] != 0</label>
+			<label kind="assignment" x="-688" y="-85">i = chanMsgVar[getReceiveIndex(pid,0)][chanMsgReadIndex[getReceiveIndex(pid,0)]],
+chanMsgSize[getReceiveIndex(pid, 0)]--,
+chanMsgReadIndex[getReceiveIndex(pid, 0)] = setNewChanIndex(chanMsgReadIndex[getReceiveIndex(pid, 0)],chanMsgBuffer)</label>
+		</transition>
+	</template>
+	<system>sender = Sender(0);
+receiver = Receiver(1);
+
+system receiver, sender;
+    </system>
+	<queries>
+		<query>
+			<formula>A[] deadlock imply sender.End</formula>
+			<comment></comment>
+		</query>
+	</queries>
+</nta>

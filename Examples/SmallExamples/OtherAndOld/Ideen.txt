@@ -1,0 +1,21 @@
+Fehlersimulation:
+- Byzantinischer Fehler (nach 5.3 DAJ Crash Failure)
+- Byzantin Generals
+
+Terminierung:
+- Huang's algorithm (Blöd wegen Double -> kann uppaal nicht)
+- Mattern Global Quiescence Detection Algorithm (Wie Huang aber ohne double)
+- Dijkstra–Scholten algorithm (Tree based)
+
+Wechselseitiger Ausschluss:
+- RA (Logische Uhr)
+- suzuki kasami algorithm (Token) https://www.geeksforgeeks.org/suzuki-kasami-algorithm-for-mutual-exclusion-in-distributed-system/
+- Raymond’s tree based algorithm (Baum Struktur) https://www.geeksforgeeks.org/raymonds-tree-based-algorithm/?ref=lbp
+
+Konsens:
+- ?
+
+Kleinere Beispiele:
+- Knoten a und b sind synchronisiert und ziehen gemeinsam
+- Lossy Channel (nachrichten gehen verloren) und Messy Channel (Reihenfolge ungeordnet)
+- Queue als Buffer für Channel

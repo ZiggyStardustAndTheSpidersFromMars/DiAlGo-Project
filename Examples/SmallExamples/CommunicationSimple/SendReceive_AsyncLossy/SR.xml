@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
+<nta>
+	<declaration>const int NODES = 2;
+const int EDGES = 2;
+const int chanMsgBuffer = 1;
+int chanMsgVar[EDGES];
+int chanMsgSize[EDGES];
+//-------------------Dialgo Code---------------------
+
+int getReceiveIndex(int pidA, int pidB){
+    int in = 0;
+    if (pidA &gt; pidB) {
+		in = pidA - 1;
+	} else {
+		in = pidA;
+	}
+	return ((NODES - 1) * pidB) + in;
+}
+
+int getSendIndex(int pidA, int pidB){
+    int in = 0;
+    if (pidB &gt; pidA) {
+		in = pidB - 1;
+	} else {
+		in = pidB;
+	}
+	return ((NODES - 1) * pidA) + in;
+}
+
+int setNewChanIndex(int index, int bufferSize){
+    if(index == bufferSize - 1){
+        return 0;
+    }else{
+        return index + 1;
+    }
+}</declaration>
+	<template>
+		<name x="5" y="5">receiver</name>
+		<parameter>const int pid</parameter>
+		<declaration>int broadcastCounter = 0;
+bool sendLossy = false;
+
+
+int i;	</declaration>
+		<location id="id0" x="0" y="0" color="#0000ff">
+			<name x="10" y="0">Start</name>
+		</location>
+		<location id="id1" x="0" y="-120" color="#0000ff">
+			<name x="10" y="-120">Receive1</name>
+		</location>
+		<location id="id2" x="0" y="-170" color="#0000ff">
+			<name x="10" y="-170">Marker1</name>
+		</location>
+		<init ref="id0"/>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id1"/>
+			<label kind="guard" x="5" y="-95">chanMsgSize[getReceiveIndex(pid, 0)] != 0</label>
+			<label kind="assignment" x="5" y="-70">i = chanMsgVar[getReceiveIndex(pid,0)],
+chanMsgSize[getReceiveIndex(pid, 0)]--</label>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id2"/>
+		</transition>
+	</template>
+	<template>
+		<name x="5" y="5">sender</name>
+		<parameter>const int pid</parameter>
+		<declaration>int broadcastCounter = 0;
+bool sendLossy = false;
+
+	</declaration>
+		<location id="id3" x="0" y="0" color="#0000ff">
+			<name x="10" y="0">Start</name>
+		</location>
+		<location id="id4" x="0" y="-50" color="#0000ff">
+			<name x="10" y="-50">RandomBool1</name>
+		</location>
+		<location id="id5" x="-50" y="-100" color="#0000ff">
+		</location>
+		<location id="id6" x="50" y="-100" color="#0000ff">
+		</location>
+		<location id="id7" x="0" y="-150" color="#0000ff">
+		</location>
+		<location id="id8" x="-150" y="-200" color="#0000ff">
+			<name x="-136" y="-221">If1</name>
+		</location>
+		<location id="id9" x="150" y="-200" color="#0000ff">
+			<name x="161" y="-229">Else1</name>
+		</location>
+		<location id="id10" x="-150" y="-320" color="#0000ff">
+			<name x="-140" y="-320">Send1</name>
+		</location>
+		<location id="id11" x="0" y="-370" color="#0000ff">
+		</location>
+		<init ref="id3"/>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id4"/>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id5"/>
+			<label kind="assignment" x="-136" y="-76">sendLossy = true</label>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id6"/>
+			<label kind="assignment" x="35" y="-75">sendLossy = false</label>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id7"/>
+		</transition>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id7"/>
+		</transition>
+		<transition>
+			<source ref="id7"/>
+			<target ref="id8"/>
+			<label kind="guard" x="-136" y="-178">sendLossy</label>
+		</transition>
+		<transition>
+			<source ref="id7"/>
+			<target ref="id9"/>
+			<label kind="guard" x="85" y="-178">!sendLossy</label>
+		</transition>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id10"/>
+			<label kind="guard" x="-145" y="-295">chanMsgSize[getSendIndex(pid, 1)] &lt; chanMsgBuffer</label>
+			<label kind="assignment" x="-145" y="-270">chanMsgVar[getSendIndex(pid,1)] = 42,
+chanMsgSize[getSendIndex(pid, 1)]++</label>
+		</transition>
+		<transition>
+			<source ref="id9"/>
+			<target ref="id11"/>
+		</transition>
+		<transition>
+			<source ref="id10"/>
+			<target ref="id11"/>
+		</transition>
+	</template>
+	<system>sender0 = sender(0);
+receiver1 = receiver(1);
+
+system sender0,receiver1;</system>
+	<queries>
+		<query>
+			<formula></formula>
+			<comment></comment>
+		</query>
+	</queries>
+</nta>

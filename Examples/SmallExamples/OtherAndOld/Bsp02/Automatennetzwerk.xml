@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
+<nta>
+	<declaration>int wDone[3] = {-1,-1,-1};
+
+int wStart[3] = {-1,-1,-1};</declaration>
+	<template>
+		<name x="5" y="5">Worker</name>
+		<parameter>const int id, const int workingTime</parameter>
+		<declaration>bool working = true;
+int workingState = 0;</declaration>
+		<location id="id0" x="0" y="0">
+		</location>
+		<location id="id1" x="0" y="-68">
+			<name x="-17" y="-102">Working</name>
+			<label kind="invariant" x="51" y="-93">workingState &lt;= workingTime</label>
+		</location>
+		<location id="id2" x="-246" y="-68">
+			<name x="-263" y="-102">Done</name>
+		</location>
+		<location id="id3" x="-119" y="-170">
+			<name x="-136" y="-204">Wait</name>
+		</location>
+		<init ref="id0"/>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id1"/>
+			<label kind="guard" x="-85" y="-170">wStart[id] == id</label>
+			<label kind="assignment" x="-42" y="-153">wStart[id] = -1,
+workingState = 0</label>
+		</transition>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id3"/>
+			<label kind="assignment" x="-272" y="-161">wDone[id] = id</label>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id1"/>
+			<label kind="assignment" x="17" y="-42">workingState++</label>
+			<nail x="8" y="-42"/>
+			<nail x="68" y="-42"/>
+			<nail x="68" y="-68"/>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id2"/>
+			<label kind="guard" x="-204" y="-93">workingState == workingTime</label>
+			<label kind="assignment" x="-170" y="-68">working = false,
+workingState = 0</label>
+		</transition>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id1"/>
+		</transition>
+	</template>
+	<template>
+		<name>Master</name>
+		<location id="id4" x="0" y="0">
+		</location>
+		<location id="id5" x="-85" y="-85">
+			<name x="-127" y="-119">W0Done</name>
+		</location>
+		<location id="id6" x="0" y="-85">
+			<name x="-25" y="-119">W1Done</name>
+		</location>
+		<location id="id7" x="93" y="-85">
+			<name x="76" y="-119">W2Done</name>
+		</location>
+		<location id="id8" x="0" y="-178">
+		</location>
+		<init ref="id4"/>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id4"/>
+			<nail x="-170" y="-178"/>
+			<nail x="-170" y="0"/>
+		</transition>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id4"/>
+			<label kind="guard" x="-17" y="-255">wDone[0] &amp;&amp; wDone[1] &amp;&amp; wDone[2]</label>
+			<label kind="assignment" x="178" y="-93">wDone[0] = -1,
+wDone[1] = -1,
+wDone[2] = -1,
+wStart[0] = 0,
+wStart[1] = 1,
+wStart[2] = 2</label>
+			<nail x="0" y="-221"/>
+			<nail x="170" y="-221"/>
+			<nail x="170" y="51"/>
+			<nail x="0" y="51"/>
+		</transition>
+		<transition>
+			<source ref="id7"/>
+			<target ref="id8"/>
+		</transition>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id8"/>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id8"/>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id7"/>
+			<label kind="guard" x="34" y="-34">wDone[2] == 2</label>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id6"/>
+			<label kind="guard" x="-42" y="-59">wDone[1] == 1</label>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id5"/>
+			<label kind="guard" x="-127" y="-34">wDone[0] == 0</label>
+		</transition>
+	</template>
+	<system>// Place template instantiations here.
+Worker0 = Worker(0,2);
+Worker1 = Worker(1,5);
+Worker2 = Worker(2,10);
+MasterM = Master();
+system Worker0, Worker1, Worker2, MasterM;
+    </system>
+	<queries>
+		<query>
+			<formula>A[] not deadlock</formula>
+			<comment></comment>
+		</query>
+	</queries>
+</nta>

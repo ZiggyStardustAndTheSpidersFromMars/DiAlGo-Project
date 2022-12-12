@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<nta>
+	<declaration>const int NODES = 2;
+const int EDGES = 2;
+int chanMsgVar[EDGES];
+chan chanMsgChan[EDGES];
+//-------------------Dialgo Code---------------------
+
+int getReceiveIndex(int pidA, int pidB){
+    int in = 0;
+    if (pidA &gt; pidB) {
+		in = pidA - 1;
+	} else {
+		in = pidA;
+	}
+	return ((NODES - 1) * pidB) + in;
+}
+
+int getSendIndex(int pidA, int pidB){
+    int in = 0;
+    if (pidB &gt; pidA) {
+		in = pidB - 1;
+	} else {
+		in = pidB;
+	}
+	return ((NODES - 1) * pidA) + in;
+}
+
+int setNewChanIndex(int index, int bufferSize){
+    if(index == bufferSize - 1){
+        return 0;
+    }else{
+        return index + 1;
+    }
+}</declaration>
+	<template>
+		<name x="5" y="5">receiver</name>
+		<parameter>const int pid</parameter>
+		<declaration>int broadcastCounter = 0;
+bool sendLossy = false;
+
+int x = 0;
+	</declaration>
+			<location id="id0" x="0" y="0" color="#0000ff">
+	<name x="10" y="0">Start</name>
+	</location>	<location id="id1" x="0" y="-50" color="#0000ff">
+	<name x="10" y="-50">For1</name>
+	</location>	<location id="id2" x="0" y="-100" color="#0000ff">
+	<name x="10" y="-100">Condition1</name>
+	</location>	<location id="id3" x="0" y="-155" color="#0000ff">
+	<name x="10" y="-155">Assignment1</name>
+	</location>	<location id="id4" x="-250" y="-50" color="#0000ff">
+	<name x="-240" y="-50">id4</name>
+	</location>	<location id="id5" x="-250" y="-100" color="#0000ff">
+	<name x="-240" y="-100">Marker1</name>
+	</location>		
+		<init ref="id0"/>
+			<transition>
+	<source ref="id0"/>
+	<target ref="id1"/>
+			</transition>	<transition>
+	<source ref="id1"/>
+	<target ref="id2"/>
+		<label kind="guard" x="5" y="-80">x&lt;42</label>
+		</transition>	<transition>
+	<source ref="id2"/>
+	<target ref="id3"/>
+		<label kind="assignment" x="5" y="-135">x=x+1</label>
+		</transition>	<transition>
+	<source ref="id3"/>
+	<target ref="id1"/>
+			<nail x="200" y="-155"/>
+	<nail x="200" y="-50"/>
+	</transition>	<transition>
+	<source ref="id1"/>
+	<target ref="id4"/>
+		<label kind="guard" x="-100" y="-65">!(x&lt;42)</label>
+		</transition>	<transition>
+	<source ref="id4"/>
+	<target ref="id5"/>
+			</transition>		
+	</template>
+
+	<template>
+		<name x="5" y="5">sender</name>
+		<parameter>const int pid</parameter>
+		<declaration>int broadcastCounter = 0;
+bool sendLossy = false;
+
+int x = 42;
+	</declaration>
+			<location id="id0" x="0" y="0" color="#0000ff">
+	<name x="10" y="0">Start</name>
+	</location>		
+		<init ref="id0"/>
+				
+	</template>
+<system>sender0 = sender(0);
+receiver1 = receiver(1);
+
+system sender0,receiver1;</system>
+<queries>
+</queries>
+</nta>

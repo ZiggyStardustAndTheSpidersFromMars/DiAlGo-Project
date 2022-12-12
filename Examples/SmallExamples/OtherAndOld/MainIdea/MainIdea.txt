@@ -1,0 +1,52 @@
+package main
+
+import (
+	...
+)
+
+// Declaration of global variables (shared memory)
+var gloablVar int = 42
+...
+
+func main() {
+
+	// Declaration of ammount of nodes
+	var nodes int = 42
+
+	// Declaration of channels
+
+	// WaitGroup of nodes that form a network
+	var wg sync.WaitGroup
+	wg.Add(nodes)
+
+	// Calling goroutines via anonymous function. 
+	// Goroutines are the nodes of the network which communicates via channels.
+	// Nodes have a shared memory in the form of global variables.
+	go func() {
+		node(...)
+		wg.Done()
+	}()
+	go func() {
+		...
+
+	// wait for all goroutines (nodes) to terminate
+	wg.Wait()
+}
+
+// Declaration of nodes with logic
+func node(...){
+	// local variables of a node
+	var localVar int = 42
+	...
+	
+	// Loop as the life cycle of a node
+	while(...){
+		// Main logic of the algorithm
+		// It is possible to call other func from here
+		...
+	}
+}
+
+...
+
+

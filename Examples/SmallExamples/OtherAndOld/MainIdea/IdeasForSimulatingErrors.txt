@@ -1,0 +1,22 @@
+Art des Simulierten Fehlerfalles + Ideen wie man das umsetzen könnte
+
+Ausfallender Knoten:
+--------------------
+
+A) Kann in UPPAAL durch eine Annotation geschehen. Var. die an jeder Kante steht und au false gesetzt wird wenn ausfall und true wenn es wieder geht. 
+Extra Automat setzt diese nichtdeterministisch auf false
+
+B) Kann in GO durch setzen der Zyklus Var. auf false gemacht werden. Dann endet der Knoten nach Abschluss des zyklus.
+-> Simulation von Ausfall während Zyklus so nicht mögl.
+
+-----------------------------------------------------------------------------------------
+Reihenfolge Nachrichten geht durcheinander:
+-------------------------------------------
+
+A) Go Routinenimmt Elemente aus Channel und mischt diese zufällig wieder rein
+
+-----------------------------------------------------------------------------------------
+Nachrichten gehen verloren:
+---------------------------
+
+A) Go Routine nimmt einfach mehrere Objekte raus und überspringt dabei welche.

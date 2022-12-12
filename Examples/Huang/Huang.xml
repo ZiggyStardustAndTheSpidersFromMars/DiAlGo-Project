@@ -1,0 +1,748 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
+<nta>
+	<declaration>const int NODES = 4;
+const int EDGES = 12;
+const int WEIGHT = 4096;
+const int int_chanMsgBuffer = 1;
+int int_chanMsgVar[EDGES];
+int int_chanMsgSize[EDGES];
+//-------------------Dialgo Code---------------------
+
+int getReceiveIndex(int pidA, int pidB){
+    int in = 0;
+    if (pidA &gt; pidB) {
+		in = pidA - 1;
+	} else {
+		in = pidA;
+	}
+	return ((NODES - 1) * pidB) + in;
+}
+
+int getSendIndex(int pidA, int pidB){
+    int in = 0;
+    if (pidB &gt; pidA) {
+		in = pidB - 1;
+	} else {
+		in = pidB;
+	}
+	return ((NODES - 1) * pidA) + in;
+}
+
+int setNewChanIndex(int index, int bufferSize){
+    if(index == bufferSize - 1){
+        return 0;
+    }else{
+        return index + 1;
+    }
+}</declaration>
+	<template>
+		<name x="5" y="5">worker</name>
+		<parameter>const int pid</parameter>
+		<declaration>int broadcastCounter = 0;
+bool sendLossy = false;
+
+bool active = false;
+bool hasSendActivations = false;
+int weight = 0;
+bool goIdle = false;
+bool doSendActivation = false;
+
+int nodePid=0;
+int msg0;
+int i=1;	</declaration>
+		<location id="id0" x="0" y="0" color="#0000ff">
+			<name x="10" y="0">Start</name>
+		</location>
+		<location id="id1" x="0" y="-50" color="#0000ff">
+			<name x="10" y="-50">For1</name>
+		</location>
+		<location id="id2" x="0" y="-100" color="#0000ff">
+			<name x="10" y="-100">Condition1</name>
+		</location>
+		<location id="id3" x="0" y="-155" color="#0000ff">
+			<name x="10" y="-155">Assignment1</name>
+		</location>
+		<location id="id4" x="0" y="-205" color="#0000ff">
+			<name x="10" y="-205">For2</name>
+		</location>
+		<location id="id5" x="0" y="-255" color="#0000ff">
+			<name x="10" y="-255">Condition2</name>
+		</location>
+		<location id="id6" x="-150" y="-305" color="#0000ff">
+			<name x="-140" y="-305">If1</name>
+		</location>
+		<location id="id7" x="-350" y="-425" color="#0000ff">
+			<name x="-340" y="-425">Receive1</name>
+		</location>
+		<location id="id8" x="-350" y="-475" color="#0000ff">
+			<name x="-340" y="-475">Marker1</name>
+		</location>
+		<location id="id9" x="-350" y="-530" color="#0000ff">
+			<name x="-340" y="-530">Assignment2</name>
+		</location>
+		<location id="id10" x="-350" y="-585" color="#0000ff">
+			<name x="-340" y="-585">Assignment3</name>
+		</location>
+		<location id="id11" x="-150" y="-405" color="#0000ff">
+			<name x="-140" y="-405">Default1</name>
+		</location>
+		<location id="id12" x="-150" y="-635" color="#0000ff">
+		</location>
+		<location id="id13" x="150" y="-305" color="#0000ff">
+			<name x="160" y="-305">Else1</name>
+		</location>
+		<location id="id14" x="0" y="-685" color="#0000ff">
+		</location>
+		<location id="id15" x="0" y="-740" color="#0000ff">
+			<name x="10" y="-740">Assignment4</name>
+		</location>
+		<location id="id16" x="-250" y="-205" color="#0000ff">
+			<name x="-240" y="-205">id16</name>
+		</location>
+		<location id="id17" x="-400" y="-255" color="#0000ff">
+			<name x="-390" y="-255">If2</name>
+		</location>
+		<location id="id18" x="-550" y="-305" color="#0000ff">
+			<name x="-540" y="-305">If3</name>
+		</location>
+		<location id="id19" x="-550" y="-355" color="#0000ff">
+			<name x="-540" y="-355">RandomBool1</name>
+		</location>
+		<location id="id20" x="-600" y="-405" color="#0000ff">
+		</location>
+		<location id="id21" x="-500" y="-405" color="#0000ff">
+		</location>
+		<location id="id22" x="-550" y="-455" color="#0000ff">
+		</location>
+		<location id="id23" x="-700" y="-505" color="#0000ff">
+			<name x="-690" y="-505">If4</name>
+		</location>
+		<location id="id24" x="-700" y="-560" color="#0000ff">
+			<name x="-690" y="-560">Assignment5</name>
+		</location>
+		<location id="id25" x="-700" y="-615" color="#0000ff">
+			<name x="-690" y="-615">Assignment6</name>
+		</location>
+		<location id="id26" x="-700" y="-665" color="#0000ff">
+			<name x="-690" y="-665">Marker2</name>
+		</location>
+		<location id="id27" x="-700" y="-785" color="#0000ff">
+			<name x="-690" y="-785">Send1</name>
+		</location>
+		<location id="id28" x="-700" y="-840" color="#0000ff">
+			<name x="-690" y="-840">Assignment7</name>
+		</location>
+		<location id="id29" x="-400" y="-505" color="#0000ff">
+			<name x="-390" y="-505">Else2</name>
+		</location>
+		<location id="id30" x="-550" y="-890" color="#0000ff">
+		</location>
+		<location id="id31" x="-250" y="-305" color="#0000ff">
+			<name x="-240" y="-305">Else3</name>
+		</location>
+		<location id="id32" x="-250" y="-360" color="#0000ff">
+			<name x="-240" y="-360">Assignment8</name>
+		</location>
+		<location id="id33" x="-250" y="-410" color="#0000ff">
+			<name x="-240" y="-410">For3</name>
+		</location>
+		<location id="id34" x="-250" y="-460" color="#0000ff">
+			<name x="-240" y="-460">Condition3</name>
+		</location>
+		<location id="id35" x="-400" y="-510" color="#0000ff">
+			<name x="-390" y="-510">If5</name>
+		</location>
+		<location id="id36" x="-400" y="-560" color="#0000ff">
+			<name x="-390" y="-560">RandomBool2</name>
+		</location>
+		<location id="id37" x="-450" y="-610" color="#0000ff">
+		</location>
+		<location id="id38" x="-350" y="-610" color="#0000ff">
+		</location>
+		<location id="id39" x="-400" y="-660" color="#0000ff">
+		</location>
+		<location id="id40" x="-550" y="-710" color="#0000ff">
+			<name x="-540" y="-710">If6</name>
+		</location>
+		<location id="id41" x="-550" y="-760" color="#0000ff">
+			<name x="-540" y="-760">Marker3</name>
+		</location>
+		<location id="id42" x="-550" y="-880" color="#0000ff">
+			<name x="-540" y="-880">Send2</name>
+		</location>
+		<location id="id43" x="-550" y="-935" color="#0000ff">
+			<name x="-540" y="-935">Assignment9</name>
+		</location>
+		<location id="id44" x="-250" y="-710" color="#0000ff">
+			<name x="-240" y="-710">Else4</name>
+		</location>
+		<location id="id45" x="-400" y="-985" color="#0000ff">
+		</location>
+		<location id="id46" x="-100" y="-510" color="#0000ff">
+			<name x="-90" y="-510">Else5</name>
+		</location>
+		<location id="id47" x="-250" y="-1035" color="#0000ff">
+		</location>
+		<location id="id48" x="-250" y="-1090" color="#0000ff">
+			<name x="-240" y="-1090">Assignment10</name>
+		</location>
+		<location id="id49" x="-500" y="-410" color="#0000ff">
+			<name x="-490" y="-410">id49</name>
+		</location>
+		<location id="id50" x="-500" y="-465" color="#0000ff">
+			<name x="-490" y="-465">Assignment11</name>
+		</location>
+		<location id="id51" x="-400" y="-1140" color="#0000ff">
+		</location>
+		<location id="id52" x="-100" y="-255" color="#0000ff">
+			<name x="-90" y="-255">Else6</name>
+		</location>
+		<location id="id53" x="-250" y="-1190" color="#0000ff">
+		</location>
+		<location id="id54" x="-250" y="-50" color="#0000ff">
+			<name x="-240" y="-50">id54</name>
+		</location>
+		<init ref="id0"/>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id1"/>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id2"/>
+			<label kind="guard" x="5" y="-80">true</label>
+		</transition>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id3"/>
+			<label kind="assignment" x="5" y="-135">nodePid=0</label>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id4"/>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id5"/>
+			<label kind="guard" x="5" y="-235">nodePid&lt;NODES</label>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id6"/>
+			<label kind="guard" x="-100" y="-285">nodePid!=pid</label>
+		</transition>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id7"/>
+			<label kind="guard" x="-345" y="-400">int_chanMsgSize[getReceiveIndex(pid, nodePid)] != 0</label>
+			<label kind="assignment" x="-345" y="-375">msg0 = int_chanMsgVar[getReceiveIndex(pid,nodePid)],
+int_chanMsgSize[getReceiveIndex(pid, nodePid)]--</label>
+		</transition>
+		<transition>
+			<source ref="id7"/>
+			<target ref="id8"/>
+		</transition>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id9"/>
+			<label kind="assignment" x="-345" y="-510">weight+=msg0</label>
+		</transition>
+		<transition>
+			<source ref="id9"/>
+			<target ref="id10"/>
+			<label kind="assignment" x="-345" y="-565">active=true</label>
+		</transition>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id11"/>
+			<label kind="guard" x="-175" y="-385">int_chanMsgSize[getReceiveIndex(pid,nodePid)] == 0</label>
+		</transition>
+		<transition>
+			<source ref="id10"/>
+			<target ref="id12"/>
+		</transition>
+		<transition>
+			<source ref="id11"/>
+			<target ref="id12"/>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id13"/>
+			<label kind="guard" x="100" y="-285">!(nodePid!=pid)</label>
+		</transition>
+		<transition>
+			<source ref="id12"/>
+			<target ref="id14"/>
+		</transition>
+		<transition>
+			<source ref="id13"/>
+			<target ref="id14"/>
+		</transition>
+		<transition>
+			<source ref="id14"/>
+			<target ref="id15"/>
+			<label kind="assignment" x="5" y="-720">nodePid++</label>
+		</transition>
+		<transition>
+			<source ref="id15"/>
+			<target ref="id4"/>
+			<nail x="200" y="-740"/>
+			<nail x="200" y="-205"/>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id16"/>
+			<label kind="guard" x="-100" y="-220">!(nodePid&lt;NODES)</label>
+		</transition>
+		<transition>
+			<source ref="id16"/>
+			<target ref="id17"/>
+			<label kind="guard" x="-350" y="-235">active</label>
+		</transition>
+		<transition>
+			<source ref="id17"/>
+			<target ref="id18"/>
+			<label kind="guard" x="-500" y="-285">hasSendActivations</label>
+		</transition>
+		<transition>
+			<source ref="id18"/>
+			<target ref="id19"/>
+		</transition>
+		<transition>
+			<source ref="id19"/>
+			<target ref="id20"/>
+			<label kind="assignment" x="-615" y="-380">goIdle = true</label>
+		</transition>
+		<transition>
+			<source ref="id19"/>
+			<target ref="id21"/>
+			<label kind="assignment" x="-515" y="-380">goIdle = false</label>
+		</transition>
+		<transition>
+			<source ref="id20"/>
+			<target ref="id22"/>
+		</transition>
+		<transition>
+			<source ref="id21"/>
+			<target ref="id22"/>
+		</transition>
+		<transition>
+			<source ref="id22"/>
+			<target ref="id23"/>
+			<label kind="guard" x="-650" y="-485">goIdle</label>
+		</transition>
+		<transition>
+			<source ref="id23"/>
+			<target ref="id24"/>
+			<label kind="assignment" x="-695" y="-540">active=false</label>
+		</transition>
+		<transition>
+			<source ref="id24"/>
+			<target ref="id25"/>
+			<label kind="assignment" x="-695" y="-595">hasSendActivations=false</label>
+		</transition>
+		<transition>
+			<source ref="id25"/>
+			<target ref="id26"/>
+		</transition>
+		<transition>
+			<source ref="id26"/>
+			<target ref="id27"/>
+			<label kind="guard" x="-695" y="-760">int_chanMsgSize[getSendIndex(pid, 0)] &lt; int_chanMsgBuffer</label>
+			<label kind="assignment" x="-695" y="-735">int_chanMsgVar[getSendIndex(pid,0)] = weight,
+int_chanMsgSize[getSendIndex(pid, 0)]++</label>
+		</transition>
+		<transition>
+			<source ref="id27"/>
+			<target ref="id28"/>
+			<label kind="assignment" x="-695" y="-820">weight=0</label>
+		</transition>
+		<transition>
+			<source ref="id22"/>
+			<target ref="id29"/>
+			<label kind="guard" x="-450" y="-485">!(goIdle)</label>
+		</transition>
+		<transition>
+			<source ref="id28"/>
+			<target ref="id30"/>
+		</transition>
+		<transition>
+			<source ref="id29"/>
+			<target ref="id30"/>
+		</transition>
+		<transition>
+			<source ref="id17"/>
+			<target ref="id31"/>
+			<label kind="guard" x="-300" y="-285">!(hasSendActivations)</label>
+		</transition>
+		<transition>
+			<source ref="id31"/>
+			<target ref="id32"/>
+			<label kind="assignment" x="-245" y="-340">i=1</label>
+		</transition>
+		<transition>
+			<source ref="id32"/>
+			<target ref="id33"/>
+		</transition>
+		<transition>
+			<source ref="id33"/>
+			<target ref="id34"/>
+			<label kind="guard" x="-245" y="-440">i&lt;NODES</label>
+		</transition>
+		<transition>
+			<source ref="id34"/>
+			<target ref="id35"/>
+			<label kind="guard" x="-350" y="-490">i!=pid</label>
+		</transition>
+		<transition>
+			<source ref="id35"/>
+			<target ref="id36"/>
+		</transition>
+		<transition>
+			<source ref="id36"/>
+			<target ref="id37"/>
+			<label kind="assignment" x="-465" y="-585">doSendActivation = true</label>
+		</transition>
+		<transition>
+			<source ref="id36"/>
+			<target ref="id38"/>
+			<label kind="assignment" x="-365" y="-585">doSendActivation = false</label>
+		</transition>
+		<transition>
+			<source ref="id37"/>
+			<target ref="id39"/>
+		</transition>
+		<transition>
+			<source ref="id38"/>
+			<target ref="id39"/>
+		</transition>
+		<transition>
+			<source ref="id39"/>
+			<target ref="id40"/>
+			<label kind="guard" x="-500" y="-690">doSendActivation</label>
+		</transition>
+		<transition>
+			<source ref="id40"/>
+			<target ref="id41"/>
+		</transition>
+		<transition>
+			<source ref="id41"/>
+			<target ref="id42"/>
+			<label kind="guard" x="-545" y="-855">int_chanMsgSize[getSendIndex(pid, i)] &lt; int_chanMsgBuffer</label>
+			<label kind="assignment" x="-545" y="-830">int_chanMsgVar[getSendIndex(pid,i)] = weight/2,
+int_chanMsgSize[getSendIndex(pid, i)]++</label>
+		</transition>
+		<transition>
+			<source ref="id42"/>
+			<target ref="id43"/>
+			<label kind="assignment" x="-545" y="-915">weight=weight/2</label>
+		</transition>
+		<transition>
+			<source ref="id39"/>
+			<target ref="id44"/>
+			<label kind="guard" x="-300" y="-690">!(doSendActivation)</label>
+		</transition>
+		<transition>
+			<source ref="id43"/>
+			<target ref="id45"/>
+		</transition>
+		<transition>
+			<source ref="id44"/>
+			<target ref="id45"/>
+		</transition>
+		<transition>
+			<source ref="id34"/>
+			<target ref="id46"/>
+			<label kind="guard" x="-150" y="-490">!(i!=pid)</label>
+		</transition>
+		<transition>
+			<source ref="id45"/>
+			<target ref="id47"/>
+		</transition>
+		<transition>
+			<source ref="id46"/>
+			<target ref="id47"/>
+		</transition>
+		<transition>
+			<source ref="id47"/>
+			<target ref="id48"/>
+			<label kind="assignment" x="-245" y="-1070">i++</label>
+		</transition>
+		<transition>
+			<source ref="id48"/>
+			<target ref="id33"/>
+			<nail x="-50" y="-1090"/>
+			<nail x="-50" y="-410"/>
+		</transition>
+		<transition>
+			<source ref="id33"/>
+			<target ref="id49"/>
+			<label kind="guard" x="-350" y="-425">!(i&lt;NODES)</label>
+		</transition>
+		<transition>
+			<source ref="id49"/>
+			<target ref="id50"/>
+			<label kind="assignment" x="-495" y="-445">hasSendActivations=true</label>
+		</transition>
+		<transition>
+			<source ref="id30"/>
+			<target ref="id51"/>
+		</transition>
+		<transition>
+			<source ref="id50"/>
+			<target ref="id51"/>
+		</transition>
+		<transition>
+			<source ref="id16"/>
+			<target ref="id52"/>
+			<label kind="guard" x="-150" y="-235">!(active)</label>
+		</transition>
+		<transition>
+			<source ref="id51"/>
+			<target ref="id53"/>
+		</transition>
+		<transition>
+			<source ref="id52"/>
+			<target ref="id53"/>
+		</transition>
+		<transition>
+			<source ref="id53"/>
+			<target ref="id1"/>
+			<nail x="200" y="-1190"/>
+			<nail x="200" y="-50"/>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id54"/>
+			<label kind="guard" x="-100" y="-65">!(true)</label>
+		</transition>
+	</template>
+	<template>
+		<name x="5" y="5">controlAgent</name>
+		<parameter>const int pid</parameter>
+		<declaration>int broadcastCounter = 0;
+bool sendLossy = false;
+
+bool terminated = false;
+int weight = WEIGHT/2;
+
+int msg0;
+int msg1;
+int msg2;	</declaration>
+		<location id="id55" x="0" y="0" color="#0000ff">
+			<name x="10" y="0">Start</name>
+		</location>
+		<location id="id56" x="0" y="-120" color="#0000ff">
+			<name x="10" y="-120">Send1</name>
+		</location>
+		<location id="id57" x="0" y="-170" color="#0000ff">
+			<name x="10" y="-170">For1</name>
+		</location>
+		<location id="id58" x="0" y="-220" color="#0000ff">
+			<name x="10" y="-220">Condition1</name>
+		</location>
+		<location id="id59" x="-400" y="-340" color="#0000ff">
+			<name x="-390" y="-340">Receive1</name>
+		</location>
+		<location id="id60" x="-400" y="-390" color="#0000ff">
+			<name x="-390" y="-390">Marker1</name>
+		</location>
+		<location id="id61" x="-400" y="-445" color="#0000ff">
+			<name x="-390" y="-445">Assignment1</name>
+		</location>
+		<location id="id62" x="-200" y="-340" color="#0000ff">
+			<name x="-190" y="-340">Receive2</name>
+		</location>
+		<location id="id63" x="-200" y="-390" color="#0000ff">
+			<name x="-190" y="-390">Marker2</name>
+		</location>
+		<location id="id64" x="-200" y="-445" color="#0000ff">
+			<name x="-190" y="-445">Assignment2</name>
+		</location>
+		<location id="id65" x="0" y="-340" color="#0000ff">
+			<name x="10" y="-340">Receive3</name>
+		</location>
+		<location id="id66" x="0" y="-390" color="#0000ff">
+			<name x="10" y="-390">Marker3</name>
+		</location>
+		<location id="id67" x="0" y="-445" color="#0000ff">
+			<name x="10" y="-445">Assignment3</name>
+		</location>
+		<location id="id68" x="200" y="-320" color="#0000ff">
+			<name x="210" y="-320">Default1</name>
+		</location>
+		<location id="id69" x="0" y="-495" color="#0000ff">
+		</location>
+		<location id="id70" x="-150" y="-545" color="#0000ff">
+			<name x="-140" y="-545">If1</name>
+		</location>
+		<location id="id71" x="-150" y="-600" color="#0000ff">
+			<name x="-140" y="-600">Assignment4</name>
+		</location>
+		<location id="id72" x="150" y="-545" color="#0000ff">
+			<name x="160" y="-545">Else1</name>
+		</location>
+		<location id="id73" x="0" y="-650" color="#0000ff">
+		</location>
+		<location id="id74" x="-250" y="-170" color="#0000ff">
+			<name x="-240" y="-170">id19</name>
+		</location>
+		<location id="id75" x="-250" y="-220" color="#0000ff">
+			<name x="-240" y="-220">Marker4</name>
+		</location>
+		<location id="id76" x="-250" y="-270" color="#0000ff">
+			<name x="-240" y="-270">Marker5</name>
+		</location>
+		<init ref="id55"/>
+		<transition>
+			<source ref="id55"/>
+			<target ref="id56"/>
+			<label kind="guard" x="5" y="-95">int_chanMsgSize[getSendIndex(pid, 1)] &lt; int_chanMsgBuffer</label>
+			<label kind="assignment" x="5" y="-70">int_chanMsgVar[getSendIndex(pid,1)] = WEIGHT/2,
+int_chanMsgSize[getSendIndex(pid, 1)]++</label>
+		</transition>
+		<transition>
+			<source ref="id56"/>
+			<target ref="id57"/>
+		</transition>
+		<transition>
+			<source ref="id57"/>
+			<target ref="id58"/>
+			<label kind="guard" x="5" y="-200">!terminated</label>
+		</transition>
+		<transition>
+			<source ref="id58"/>
+			<target ref="id59"/>
+			<label kind="guard" x="-395" y="-315">int_chanMsgSize[getReceiveIndex(pid, 1)] != 0</label>
+			<label kind="assignment" x="-395" y="-290">msg0 = int_chanMsgVar[getReceiveIndex(pid,1)],
+int_chanMsgSize[getReceiveIndex(pid, 1)]--</label>
+		</transition>
+		<transition>
+			<source ref="id59"/>
+			<target ref="id60"/>
+		</transition>
+		<transition>
+			<source ref="id60"/>
+			<target ref="id61"/>
+			<label kind="assignment" x="-395" y="-425">weight+=msg0</label>
+		</transition>
+		<transition>
+			<source ref="id58"/>
+			<target ref="id62"/>
+			<label kind="guard" x="-195" y="-315">int_chanMsgSize[getReceiveIndex(pid, 2)] != 0</label>
+			<label kind="assignment" x="-195" y="-290">msg1 = int_chanMsgVar[getReceiveIndex(pid,2)],
+int_chanMsgSize[getReceiveIndex(pid, 2)]--</label>
+		</transition>
+		<transition>
+			<source ref="id62"/>
+			<target ref="id63"/>
+		</transition>
+		<transition>
+			<source ref="id63"/>
+			<target ref="id64"/>
+			<label kind="assignment" x="-195" y="-425">weight+=msg1</label>
+		</transition>
+		<transition>
+			<source ref="id58"/>
+			<target ref="id65"/>
+			<label kind="guard" x="5" y="-315">int_chanMsgSize[getReceiveIndex(pid, 3)] != 0</label>
+			<label kind="assignment" x="5" y="-290">msg2 = int_chanMsgVar[getReceiveIndex(pid,3)],
+int_chanMsgSize[getReceiveIndex(pid, 3)]--</label>
+		</transition>
+		<transition>
+			<source ref="id65"/>
+			<target ref="id66"/>
+		</transition>
+		<transition>
+			<source ref="id66"/>
+			<target ref="id67"/>
+			<label kind="assignment" x="5" y="-425">weight+=msg2</label>
+		</transition>
+		<transition>
+			<source ref="id58"/>
+			<target ref="id68"/>
+			<label kind="guard" x="175" y="-300">int_chanMsgSize[getReceiveIndex(pid,1)] == 0
+&amp;&amp; int_chanMsgSize[getReceiveIndex(pid,2)] == 0
+&amp;&amp; int_chanMsgSize[getReceiveIndex(pid,3)] == 0</label>
+		</transition>
+		<transition>
+			<source ref="id61"/>
+			<target ref="id69"/>
+		</transition>
+		<transition>
+			<source ref="id64"/>
+			<target ref="id69"/>
+		</transition>
+		<transition>
+			<source ref="id67"/>
+			<target ref="id69"/>
+		</transition>
+		<transition>
+			<source ref="id68"/>
+			<target ref="id69"/>
+		</transition>
+		<transition>
+			<source ref="id69"/>
+			<target ref="id70"/>
+			<label kind="guard" x="-100" y="-525">weight==WEIGHT</label>
+		</transition>
+		<transition>
+			<source ref="id70"/>
+			<target ref="id71"/>
+			<label kind="assignment" x="-145" y="-580">terminated=true</label>
+		</transition>
+		<transition>
+			<source ref="id69"/>
+			<target ref="id72"/>
+			<label kind="guard" x="100" y="-525">!(weight==WEIGHT)</label>
+		</transition>
+		<transition>
+			<source ref="id71"/>
+			<target ref="id73"/>
+		</transition>
+		<transition>
+			<source ref="id72"/>
+			<target ref="id73"/>
+		</transition>
+		<transition>
+			<source ref="id73"/>
+			<target ref="id57"/>
+			<nail x="200" y="-650"/>
+			<nail x="200" y="-170"/>
+		</transition>
+		<transition>
+			<source ref="id57"/>
+			<target ref="id74"/>
+			<label kind="guard" x="-100" y="-185">!(!terminated)</label>
+		</transition>
+		<transition>
+			<source ref="id74"/>
+			<target ref="id75"/>
+		</transition>
+		<transition>
+			<source ref="id75"/>
+			<target ref="id76"/>
+		</transition>
+	</template>
+	<system>controlAgent0 = controlAgent(0);
+worker1 = worker(1);
+worker2 = worker(2);
+worker3 = worker(3);
+
+system controlAgent0,worker1,worker2,worker3;</system>
+	<queries>
+		<query>
+			<formula>E&lt;&gt; worker2.weight == 1024</formula>
+			<comment></comment>
+		</query>
+		<query>
+			<formula>E&lt;&gt; controlAgent0.Marker4</formula>
+			<comment></comment>
+		</query>
+		<query>
+			<formula>E&lt;&gt; controlAgent0.weight == 3584</formula>
+			<comment></comment>
+		</query>
+	</queries>
+</nta>
